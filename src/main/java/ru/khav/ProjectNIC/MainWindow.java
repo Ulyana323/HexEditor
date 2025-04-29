@@ -1,6 +1,7 @@
 package ru.khav.ProjectNIC;
 
 import ru.khav.ProjectNIC.models.DataFromFile;
+import ru.khav.ProjectNIC.models.MeanTableModel;
 import ru.khav.ProjectNIC.services.DownloadDataFromFile;
 import ru.khav.ProjectNIC.utill.LoadDataFromFile;
 
@@ -25,6 +26,7 @@ public class MainWindow extends JFrame {
     DownloadDataFromFile downloadDataFromFile = new LoadDataFromFile();
     JTable table;
     JTable addressTable;
+    JTable meanByteTable;
     List<String> array = new LinkedList<>();
 
     private List<String> currentData;
@@ -40,7 +42,7 @@ public class MainWindow extends JFrame {
         setResizable(false);
         setTitle("trying...");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(500, 500));
+        setPreferredSize(new Dimension(500, 600));
         setLocation(200, 100); // Устанавливаем позицию окна
         configContainer();
 
@@ -82,10 +84,10 @@ public class MainWindow extends JFrame {
         DataFromFile curData = downloadDataFromFile.getDataFromFile();
         currentData = curData.getHexFormatOfData();
 
-         createDynamicTable(currentData, countByte, address);
-         //createMenu();
-          revalidate();
-         repaint();
+        createDynamicTable(currentData, countByte, address);
+        //createMenu();
+        revalidate();
+        repaint();
     }
 
     public void createMenu() {
@@ -117,11 +119,12 @@ public class MainWindow extends JFrame {
         currentData = dataToView;
         int indexData = 0;
 
-        for(int i=0;i<rows;i++)
-        {
+
+
+        for (int i = 0; i < rows; i++) {
             Vector<String> row = new Vector<>();
             for (int j = 0; j < 1; j++) {
-                String addressNum = String.format("%8s", Integer.toBinaryString(i*colls)).replace(' ', '0');
+                String addressNum = String.format("%8s", Integer.toBinaryString(i * colls)).replace(' ', '0');
                 row.add(addressNum);
             }
             addresses.add(row);
@@ -129,8 +132,6 @@ public class MainWindow extends JFrame {
 
         for (int i = 0; i < rows; i++) {
             Vector<String> row = new Vector<>();
-            /*String firstCell = String.format("%8s", Integer.toBinaryString(i*colls)).replace(' ', '0');
-            row.add(firstCell);*/
             for (int j = 0; j < colls; j++) {
                 String value = " ";
                 if (indexData < dataToView.size()) {
@@ -149,18 +150,16 @@ public class MainWindow extends JFrame {
         columnAddressNames.add("adress / byte");
 
         tableModel = new DefaultTableModel(myData, columnNames);
-        tableAddressModel =new DefaultTableModel(addresses, columnAddressNames)
-        {
+        tableAddressModel = new DefaultTableModel(addresses, columnAddressNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 // запрет на редактирование ячейки адреса
                 return column != 0;
             }
         };
-        table = new JTable(tableModel);
-        addressTable= new JTable(tableAddressModel);
-
-       // Добавляем на главный контейнер панели
+        configTables();
+        showDecMeanConfig();
+        // Добавляем на главный контейнер панели
         JPanel editor = new JPanel(new BorderLayout());
         editor.add(configCenterPanel(), BorderLayout.CENTER);
         editor.add(configSouthPanel(), BorderLayout.SOUTH);
@@ -187,7 +186,7 @@ public class MainWindow extends JFrame {
         for (int i = 0; i < rows; i++) {
             Vector<String> row = new Vector<>();
             Vector<String> addr = new Vector<>();
-            String address = String.format("%8s", Integer.toBinaryString(i*colls)).replace(' ', '0');
+            String address = String.format("%8s", Integer.toBinaryString(i * colls)).replace(' ', '0');
             addr.add(address);
             for (int j = 0; j < colls; j++) {
                 String value = " ";
@@ -209,7 +208,7 @@ public class MainWindow extends JFrame {
         }
 
         tableModel.setDataVector(myData, columnNames);
-        tableAddressModel.setDataVector(addresses,columnAddrNames);
+        tableAddressModel.setDataVector(addresses, columnAddrNames);
 
         table.revalidate();
         table.repaint();
@@ -289,121 +288,172 @@ public class MainWindow extends JFrame {
             }
         }
     }
-     public JTextComponent configDecViev(String cellValue)
-     {
-         JTextField jTextField=new JTextField(30);
-         return  jTextField;
-     }
 
-     public JPanel configCenterPanel()
-     {
-         //todo запрет на выделение 1стобца
-         addressTable.setCellSelectionEnabled(false);
-         addressTable.getColumnModel().setColumnSelectionAllowed(false);
+    public JTextComponent configDecViev(String cellValue) {
+        JTextField jTextField = new JTextField(30);
+        return jTextField;
+    }
 
-         //без авторастягивание столбцов
-         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-         table.setCellSelectionEnabled(true);
-         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-         table.setSelectionBackground(Color.YELLOW);
+    public JPanel configCenterPanel() {
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(80);
+        }
+        // Прокручиваемая панель с таблицей
+        JScrollPane scrollPane = new JScrollPane(table,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scrollPane1 = new JScrollPane(addressTable,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        // Привязываем вертикальный скроллбар
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        scrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+        // слушаем прокрутку основной таблицы
+        verticalScrollBar.addAdjustmentListener(e -> {
+            scrollPane1.getVerticalScrollBar().setValue(e.getValue());
+        });
+
+        scrollPane1.setPreferredSize(new Dimension(100, scrollPane.getPreferredSize().height));
+
+        JPanel panelWithTables = new JPanel();
+        panelWithTables.setLayout(new BoxLayout(panelWithTables, BoxLayout.X_AXIS));
+        panelWithTables.add(scrollPane1); //сначала адреса
+        panelWithTables.add(scrollPane);  //потом данные
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(panelWithTables, BorderLayout.CENTER);
+        return centerPanel;
+    }
+
+    public JPanel configSouthPanel() {
+        JPanel tableButtonPanel = new JPanel();
+
+        JButton addRowButton = new JButton("add row");
+        addRowButton.setName("addrow");
+        addRowButton.setToolTipText("Добавить строку");
+        addRowButton.addActionListener(new SimpleAction());
+
+        JButton addColumnButton = new JButton("add column");
+        addColumnButton.setName("addcol");
+        addColumnButton.setToolTipText("Добавить столбец");
+        addColumnButton.addActionListener(new SimpleAction());
+
+        JButton delRowButton = new JButton("del row");
+        delRowButton.setName("delrow");
+        delRowButton.setToolTipText("Удалить строку");
+        delRowButton.addActionListener(new SimpleAction());
+
+        JButton delColumnButton = new JButton("del column");
+        delColumnButton.setName("delcol");
+        delColumnButton.setToolTipText("Удалить столбец");
+        delColumnButton.addActionListener(new SimpleAction());
+
+        JButton exitBut = new JButton("Exit");
+        exitBut.setName("exitBut");
+        exitBut.addActionListener(new SimpleAction());
+
+        tableButtonPanel.add(addRowButton);
+        tableButtonPanel.add(addColumnButton);
+        tableButtonPanel.add(delColumnButton);
+        tableButtonPanel.add(delRowButton);
+        //tableButtonPanel.add(exitBut);
+
+        JButton scrollLeftButton = new JButton("<");
+        scrollLeftButton.addActionListener(e -> scrollTable(-1));
+        JButton scrollRightButton = new JButton(">");
+        scrollRightButton.addActionListener(e -> scrollTable(1));
+
+        tableButtonPanel.add(scrollLeftButton);
+        tableButtonPanel.add(scrollRightButton);
+
+        // панель с десят знач
+        JPanel decNote = new JPanel();
+        decNote.setBackground(Color.GREEN);
+        //без скролпэйн не отобразятся заголовки
+        JScrollPane jScrollMean = new JScrollPane(meanByteTable);
+        jScrollMean.setPreferredSize(new Dimension(450, 200));
+        decNote.add(jScrollMean, BorderLayout.CENTER);
+        //decNote.setPreferredSize(new Dimension(500, 100));
+        decNote.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        //нижняяя панель с десятичными значениями и управлением таблицы  с кнопками
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.add(tableButtonPanel, BorderLayout.NORTH);
+        // в decNote значения в десятичном виде
+        southPanel.add(decNote, BorderLayout.CENTER);
+        JPanel south0 = new JPanel(new BorderLayout());
+        JPanel south1 = new JPanel(new BorderLayout());
+        JPanel south2 = new JPanel(new BorderLayout());
+        southPanel.add(south0, BorderLayout.SOUTH);
+        south0.setBackground(Color.BLACK);
+        south2.add(exitBut);
+        south0.add(south2, BorderLayout.NORTH);
+        south0.add(south1, BorderLayout.SOUTH);
+
+        return southPanel;
+
+    }
+
+    public void showDecMeanConfig() {
+        table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = table.getSelectedRow();
+                int[] selectedColumns = table.getSelectedColumns();
+                int mean = 2;
+                int addr = 0;
+                int byteNum = 1;
+                int indexRow = 0;
 
 
-         for (int i = 0; i < table.getColumnCount(); i++) {
-             table.getColumnModel().getColumn(i).setPreferredWidth(80);
-         }
-           // Прокручиваемая панель с таблицей
-         JScrollPane scrollPane = new JScrollPane(table,
-                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-         JScrollPane scrollPane1 = new JScrollPane(addressTable,
-                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                for (int col : selectedColumns) {
+                    if (table.isCellSelected(selectedRow, col)) {
+                        Object value = table.getValueAt(selectedRow, col);
+                        if (indexRow <= 7) {
+                            meanByteTable.getModel().setValueAt(value, indexRow,mean);
+                            //todo сделать десятичный вывод значения со знаком и без
+                            meanByteTable.getModel().setValueAt(String.format("%8s", Integer.toBinaryString(selectedRow * countByte+col)).replace(' ', '0'), indexRow, addr);
+                            meanByteTable.getModel().setValueAt(col, indexRow, byteNum);
+                            indexRow++;
+                        }
+                        System.out.println("Выбрана ячейка [" + selectedRow + ", " + col + "]: " + value);
+                    }
+                }
+             for (int i = indexRow; i < 8; i++) {
+                meanByteTable.getModel().setValueAt("", i, mean);
+                meanByteTable.getModel().setValueAt("", i, addr);
+                meanByteTable.getModel().setValueAt("", i, byteNum);
+            }
+        }
+        });
 
-         // Привязываем вертикальный скроллбар
-         JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-         scrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+    }
 
-         // слушаем прокрутку основной таблицы
-         verticalScrollBar.addAdjustmentListener(e -> {
-             scrollPane1.getVerticalScrollBar().setValue(e.getValue());
-         });
+    public void configTables()
+    {
+        //тут данные с файла
+        table = new JTable(tableModel);
+        table.getTableHeader().setResizingAllowed(false);
+        table.getTableHeader().setReorderingAllowed(false);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setCellSelectionEnabled(true);
+        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionBackground(Color.YELLOW);
 
-         scrollPane1.setPreferredSize(new Dimension(100, scrollPane.getPreferredSize().height));
+        //тут адреса
+        addressTable = new JTable(tableAddressModel);
+        addressTable.setCellSelectionEnabled(false);
+        addressTable.getColumnModel().setColumnSelectionAllowed(false);
 
-         JPanel panelWithTables = new JPanel();
-         panelWithTables.setLayout(new BoxLayout(panelWithTables, BoxLayout.X_AXIS));
-         panelWithTables.add(scrollPane1); //сначала адреса
-         panelWithTables.add(scrollPane);  //потом данные
+        //тут значения в другой интерпретации
+        meanByteTable = new JTable(new MeanTableModel());
+        meanByteTable.getTableHeader().setResizingAllowed(false);
 
-         JPanel centerPanel = new JPanel(new BorderLayout());
-         centerPanel.add(panelWithTables,BorderLayout.CENTER);
-         return centerPanel;
-     }
-     public JPanel configSouthPanel()
-     {
-         JPanel tableButtonPanel = new JPanel();
 
-         JButton addRowButton = new JButton("add row");
-         addRowButton.setName("addrow");
-         addRowButton.setToolTipText("Добавить строку");
-         addRowButton.addActionListener(new SimpleAction());
 
-         JButton addColumnButton = new JButton("add column");
-         addColumnButton.setName("addcol");
-         addColumnButton.setToolTipText("Добавить столбец");
-         addColumnButton.addActionListener(new SimpleAction());
+    }
 
-         JButton delRowButton = new JButton("del row");
-         delRowButton.setName("delrow");
-         delRowButton.setToolTipText("Удалить строку");
-         delRowButton.addActionListener(new SimpleAction());
-
-         JButton delColumnButton = new JButton("del column");
-         delColumnButton.setName("delcol");
-         delColumnButton.setToolTipText("Удалить столбец");
-         delColumnButton.addActionListener(new SimpleAction());
-
-         JButton exitBut = new JButton("Exit");
-         exitBut.setName("exitBut");
-         exitBut.addActionListener(new SimpleAction());
-
-         tableButtonPanel.add(addRowButton);
-         tableButtonPanel.add(addColumnButton);
-         tableButtonPanel.add(delColumnButton);
-         tableButtonPanel.add(delRowButton);
-         //tableButtonPanel.add(exitBut);
-
-         JButton scrollLeftButton = new JButton("<");
-         scrollLeftButton.addActionListener(e -> scrollTable(-1));
-         JButton scrollRightButton = new JButton(">");
-         scrollRightButton.addActionListener(e -> scrollTable(1));
-
-         tableButtonPanel.add(scrollLeftButton);
-         tableButtonPanel.add(scrollRightButton);
-
-         // панель с десят знач
-         JPanel decNote = new JPanel();
-         decNote.setBackground(Color.GREEN);
-         //decNote.setPreferredSize(new Dimension(500, 100));
-         decNote.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
-         //нижняяя панель с десятичными значениями и управлением таблицы  с кнопками
-         JPanel southPanel = new JPanel(new BorderLayout());
-         southPanel.add(tableButtonPanel, BorderLayout.NORTH);
-         // в decNote значения в десятичном виде
-         southPanel.add(decNote, BorderLayout.CENTER);
-         JPanel south0 = new JPanel(new BorderLayout());
-         JPanel south1 = new JPanel(new BorderLayout());
-         JPanel south2 = new JPanel(new BorderLayout());
-         southPanel.add(south0, BorderLayout.SOUTH);
-         south0.setBackground(Color.BLACK);
-         south2.add(exitBut);
-         south0.add(south2, BorderLayout.NORTH);
-         south0.add(south1, BorderLayout.SOUTH);
-
-         return southPanel;
-
-     }
     public static void main(String[] args) {
 
 
