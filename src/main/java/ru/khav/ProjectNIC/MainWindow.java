@@ -78,10 +78,9 @@ public class MainWindow extends JFrame {
 
 
     public void dataload(String path) throws IOException {
-        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));*
-        DataFromFile curData
-    curData = d*8getDataFromFile();
-        currentData = curData.g etHexFormatOfData();
+        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
+        DataFromFile curData = downloadDataFromFile.getDataFromFile();
+        currentData = curData.getHexFormatOfData();
 
          createDynamicTable(currentData, countByte, address);
          //createMenu();
@@ -150,7 +149,14 @@ public class MainWindow extends JFrame {
         columnAddressNames.add("adress / byte");
 
         tableModel = new DefaultTableModel(myData, columnNames);
-        tableAddressModel =new DefaultTableModel(addresses, columnAddressNames);
+        tableAddressModel =new DefaultTableModel(addresses, columnAddressNames)
+        {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // запрет на редактирование ячейки адреса
+                return column != 0;
+            }
+        };
         table = new JTable(tableModel);
         addressTable= new JTable(tableAddressModel);
 
@@ -294,12 +300,13 @@ public class MainWindow extends JFrame {
          //todo запрет на выделение 1стобца
          addressTable.setCellSelectionEnabled(false);
          addressTable.getColumnModel().setColumnSelectionAllowed(false);
-        addressTable.getCellEditor().stopCellEditing();
+
          //без авторастягивание столбцов
          table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
          table.setCellSelectionEnabled(true);
          table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
          table.setSelectionBackground(Color.YELLOW);
+
 
          for (int i = 0; i < table.getColumnCount(); i++) {
              table.getColumnModel().getColumn(i).setPreferredWidth(80);
