@@ -6,5 +6,5 @@ import java.io.IOException;
 
 public interface DownloadDataFromFile {
      DataFromFile getDataFromFile() throws IOException;
-     int updateDataInFile(DataFromFile data);
+    void updateDataInFile(DataFromFile data) throws IOException;;
 }

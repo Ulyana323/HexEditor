@@ -1,13 +1,20 @@
 package ru.khav.ProjectNIC.models;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 @Data
-public class DataFromFile  {
+@NoArgsConstructor
+public class DataFromFile {
+
+    public DataFromFile( List<Byte> bytes)
+    {
+        this.bytes=bytes;
+    }
 
     private List<Byte> bytes=new LinkedList<>();
 
@@ -32,12 +39,10 @@ public class DataFromFile  {
         return sb.toString();
     }
 
-//    public static void main(String[] args) {
-//
-//        DataFromFile data=new DataFromFile();
-//        data.bytes= new Byte[]{16};
-//
-//       System.out.println(data.getHexFormatOfData());
-//    }
+public void clear()
+{
+    bytes.clear();
+    bytes10.clear();
+}
 
 }

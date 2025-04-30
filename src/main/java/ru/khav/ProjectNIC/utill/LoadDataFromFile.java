@@ -1,12 +1,14 @@
 package ru.khav.ProjectNIC.utill;
 
+import lombok.Data;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.services.DownloadDataFromFile;
 
 import java.io.*;
 public class LoadDataFromFile implements DownloadDataFromFile {
 
-    DataFromFile dataFromFile = new DataFromFile();
+    DataFromFile curDataFromFile = new DataFromFile();
+    private File file;
 
     public File getFile() {
         return file;
@@ -17,7 +19,6 @@ public class LoadDataFromFile implements DownloadDataFromFile {
         return this;
     }
 
-    private File file;
 
     @Override
     public DataFromFile getDataFromFile() throws IOException
@@ -27,8 +28,8 @@ public class LoadDataFromFile implements DownloadDataFromFile {
         try(BufferedReader br = new BufferedReader(new FileReader(file.getPath()))){
             while((c=br.read())!=-1)
             {
-                dataFromFile.getBytes().add((byte)c);
-                dataFromFile.getBytes10().add(c);
+                curDataFromFile.getBytes().add((byte)c);
+                curDataFromFile.getBytes10().add(c);
             }
         }catch (IOException e)
         {
@@ -36,29 +37,34 @@ public class LoadDataFromFile implements DownloadDataFromFile {
             throw e;
 
         }
-        return dataFromFile;
+        return curDataFromFile;
     }
 
     @Override
-    public int updateDataInFile(DataFromFile data) {
-        return 0;
-    }
+    public void updateDataInFile(DataFromFile data) throws IOException{
 
-    public static void main(String[] args)  {
+        try(BufferedOutputStream br=new BufferedOutputStream(new FileOutputStream(file.getPath())))
+        {
+            byte[] buffer = new byte[data.getBytes().size()];
+            for(int i=0;i<buffer.length;i++)
+            {
+                buffer[i]=data.getBytes().get(i);
 
-        try {
-            File file1 = new File("D:\\JAVA\\HexEditor\\src\\main\\java\\ru\\khav\\ProjectNIC\\hello.txt");
-            LoadDataFromFile loadDataFromFile = new LoadDataFromFile();
-            loadDataFromFile.setFile(file1);
-        DataFromFile df= loadDataFromFile.getDataFromFile();
-            System.out.println(df.getHexFormatOfData());
-         System.out.println(df.getDecFormatOfData());
-
-        }
-        catch (IOException e)
+            }
+           br.write(buffer, 0, buffer.length);
+        }catch (IOException e)
         {
             System.out.println(e.getMessage());
+            throw e;
         }
+    }
 
+    public DataFromFile getCurDataFromFile() {
+        return curDataFromFile;
+    }
+    public void clear()
+    {
+        this.curDataFromFile.clear();
+        this.file=null;
     }
 }

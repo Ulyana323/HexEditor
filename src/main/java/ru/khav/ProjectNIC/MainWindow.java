@@ -6,18 +6,22 @@ import ru.khav.ProjectNIC.services.DownloadDataFromFile;
 import ru.khav.ProjectNIC.utill.LoadDataFromFile;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class MainWindow extends JFrame {
-
+    private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
     private static int countByte = 10;
     private static int address = 10;
     DefaultTableModel tableModel;
@@ -29,7 +33,10 @@ public class MainWindow extends JFrame {
     JTable meanByteTable;
     List<String> array = new LinkedList<>();
 
+    List<String> notReactButNames=new ArrayList<>();
+
     private List<String> currentData;
+    private List<Byte> currentByteData;
     Container container = getContentPane();
     CardLayout cardLayout = new CardLayout();
     JPanel mainPanel = new JPanel(cardLayout);
@@ -38,6 +45,7 @@ public class MainWindow extends JFrame {
     JPanel secondPanel = new JPanel(new BorderLayout());
 
     public MainWindow() {
+        logger.info("Mainwinow()");
         setSize(2000, 1000);
         setResizable(false);
         setTitle("trying...");
@@ -53,6 +61,7 @@ public class MainWindow extends JFrame {
     }
 
     public void startWindow() {
+        logger.info("startWindow");
         // Создание экземпляра JFileChooser
         fileChooser = new JFileChooser();
         firstPanel.setBackground(Color.CYAN);
@@ -73,6 +82,7 @@ public class MainWindow extends JFrame {
 
 
     public void configContainer() {
+        logger.info("configContainer()");
         container.setLayout(new BorderLayout());
         container.add(mainPanel, BorderLayout.CENTER);
         container.setBackground(Color.black);
@@ -80,10 +90,17 @@ public class MainWindow extends JFrame {
 
 
     public void dataload(String path) throws IOException {
+        logger.info("dataload()");
         ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
         DataFromFile curData = downloadDataFromFile.getDataFromFile();
+        currentByteData = curData.getBytes();
         currentData = curData.getHexFormatOfData();
 
+        while(currentByteData.size()<countByte*address)
+        {
+            countByte--;
+            address--;
+        }
         createDynamicTable(currentData, countByte, address);
         //createMenu();
         revalidate();
@@ -113,12 +130,12 @@ public class MainWindow extends JFrame {
 
     }
 
-    public void createDynamicTable(List<String> dataToView, int colls, int rows) {
+    public void createDynamicTable(List<String> dataToView, int colls, int rows) throws IOException {
+        logger.info("createDynamicTable()");
         Vector<Vector<String>> myData = new Vector<>();
         Vector<Vector<String>> addresses = new Vector<>();
         currentData = dataToView;
         int indexData = 0;
-
 
 
         for (int i = 0; i < rows; i++) {
@@ -172,6 +189,7 @@ public class MainWindow extends JFrame {
     }
 
     public void changeScaleDataTable(List<String> originalData, int colls, int rows) {
+        logger.info("changeScaleDataTable()");
         List<String> flatData = originalData;
 
         //подгонка размера под новые colls * rows
@@ -261,6 +279,14 @@ public class MainWindow extends JFrame {
             if (btn.getName().equalsIgnoreCase("exitBut")) {
                 CardLayout cl = (CardLayout) (mainPanel.getLayout());
                 cl.show(mainPanel, "first");
+                currentByteData.clear();
+                currentData.clear();
+                tableModel.setRowCount(0);
+                tableModel.setColumnCount(0);
+                MeanTableModel m=(MeanTableModel) meanByteTable.getModel();
+                m.clear();
+                LoadDataFromFile l =(LoadDataFromFile) downloadDataFromFile;
+                l.clear();
             }
             if (btn.getName().equalsIgnoreCase("openBut")) {
                 CardLayout cl = (CardLayout) (mainPanel.getLayout());
@@ -295,6 +321,7 @@ public class MainWindow extends JFrame {
     }
 
     public JPanel configCenterPanel() {
+        logger.info("configCenterPanel()");
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(80);
         }
@@ -328,6 +355,7 @@ public class MainWindow extends JFrame {
     }
 
     public JPanel configSouthPanel() {
+        logger.info("configSouthPanel()");
         JPanel tableButtonPanel = new JPanel();
 
         JButton addRowButton = new JButton("add row");
@@ -354,6 +382,13 @@ public class MainWindow extends JFrame {
         exitBut.setName("exitBut");
         exitBut.addActionListener(new SimpleAction());
 
+        notReactButNames.add("addrow");
+        notReactButNames.add("addcol");
+        notReactButNames.add("delrow");
+        notReactButNames.add("delcol");
+        notReactButNames.add("exitBut");
+
+
         tableButtonPanel.add(addRowButton);
         tableButtonPanel.add(addColumnButton);
         tableButtonPanel.add(delColumnButton);
@@ -369,16 +404,18 @@ public class MainWindow extends JFrame {
         tableButtonPanel.add(scrollRightButton);
 
         // панель с десят знач
-        JPanel decNote = new JPanel();
+        JPanel decNote = new JPanel(new BorderLayout());
         decNote.setBackground(Color.GREEN);
         //без скролпэйн не отобразятся заголовки
         JScrollPane jScrollMean = new JScrollPane(meanByteTable);
-        jScrollMean.setPreferredSize(new Dimension(450, 200));
+        // jScrollMean.setPreferredSize(new Dimension(500, 151));
+
+
         decNote.add(jScrollMean, BorderLayout.CENTER);
-        //decNote.setPreferredSize(new Dimension(500, 100));
+        decNote.setPreferredSize(new Dimension(500, 153));
         decNote.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        //нижняяя панель с десятичными значениями и управлением таблицы  с кнопками
+        //нижняяя панель с десятичными значениями и управлением таблицы с кнопками
         JPanel southPanel = new JPanel(new BorderLayout());
         southPanel.add(tableButtonPanel, BorderLayout.NORTH);
         // в decNote значения в десятичном виде
@@ -397,6 +434,7 @@ public class MainWindow extends JFrame {
     }
 
     public void showDecMeanConfig() {
+        logger.info("showDecMeanConfig()");
         table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = table.getSelectedRow();
@@ -411,28 +449,61 @@ public class MainWindow extends JFrame {
                     if (table.isCellSelected(selectedRow, col)) {
                         Object value = table.getValueAt(selectedRow, col);
                         if (indexRow <= 7) {
-                            meanByteTable.getModel().setValueAt(value, indexRow,mean);
+                            meanByteTable.getModel().setValueAt(Integer.parseInt(value.toString().trim(), 16), indexRow, mean);
                             //todo сделать десятичный вывод значения со знаком и без
-                            meanByteTable.getModel().setValueAt(String.format("%8s", Integer.toBinaryString(selectedRow * countByte+col)).replace(' ', '0'), indexRow, addr);
+                            meanByteTable.getModel().setValueAt(String.format("%8s", Integer.toBinaryString(selectedRow * countByte + col)).replace(' ', '0'), indexRow, addr);
                             meanByteTable.getModel().setValueAt(col, indexRow, byteNum);
                             indexRow++;
                         }
-                        System.out.println("Выбрана ячейка [" + selectedRow + ", " + col + "]: " + value);
+                        //System.out.println("Выбрана ячейка [" + selectedRow + ", " + col + "]: " + value);
                     }
                 }
-             for (int i = indexRow; i < 8; i++) {
-                meanByteTable.getModel().setValueAt("", i, mean);
-                meanByteTable.getModel().setValueAt("", i, addr);
-                meanByteTable.getModel().setValueAt("", i, byteNum);
+                for (int i = indexRow; i < 8; i++) {
+                    meanByteTable.getModel().setValueAt("", i, mean);
+                    meanByteTable.getModel().setValueAt("", i, addr);
+                    meanByteTable.getModel().setValueAt("", i, byteNum);
+                }
             }
-        }
         });
 
     }
 
-    public void configTables()
-    {
+
+    public void editDataConfig() throws IOException {//todo изменение значений в файле блоками и одиночно
+
+        logger.info("editDataConfig()");
+        table.getModel().addTableModelListener(l -> {
+            int row = l.getFirstRow();
+            int col = l.getColumn();
+            if (row < 0 || col < 0) return;
+            int curPos = row * countByte + col;
+            String hexString = (String) table.getModel().getValueAt(row, col);
+            hexString = (hexString == null)?"0":hexString;
+            int intValue = Integer.parseInt(hexString.trim(), 16); //парсим как hex
+            byte byteValue = (byte) intValue;
+            if (curPos < currentData.size() && curPos < currentByteData.size()) {
+                currentData.set(curPos, hexString);
+                currentByteData.set(curPos, byteValue);
+            }
+            DataFromFile data = new DataFromFile(currentByteData);
+            try {
+                downloadDataFromFile.updateDataInFile(data);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                throw new RuntimeException(e);
+            }
+            logger.info(String.format("Изменена ячейка [%d, %d] -> %s (dec %d, byte %d)",
+                    row, col, hexString, intValue, byteValue));
+
+            });
+
+
+    }
+
+    public void configTables() throws IOException {
+        logger.info("configTables()");
         //тут данные с файла
+
         table = new JTable(tableModel);
         table.getTableHeader().setResizingAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);
@@ -440,6 +511,7 @@ public class MainWindow extends JFrame {
         table.setCellSelectionEnabled(true);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setSelectionBackground(Color.YELLOW);
+        editDataConfig();
 
         //тут адреса
         addressTable = new JTable(tableAddressModel);
@@ -449,9 +521,6 @@ public class MainWindow extends JFrame {
         //тут значения в другой интерпретации
         meanByteTable = new JTable(new MeanTableModel());
         meanByteTable.getTableHeader().setResizingAllowed(false);
-
-
-
     }
 
     public static void main(String[] args) {

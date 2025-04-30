@@ -2,11 +2,26 @@ package ru.khav.ProjectNIC.models;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MeanTableModel extends AbstractTableModel {
 
     Object[][] meanings= new Object[8][3];
+
+    public void clear() {
+        for (int i = 0; i < meanings.length; i++) {
+            for (int j = 0; j < meanings[i].length; j++) {
+                meanings[i][j] = null;
+            }
+        }
+        fireTableDataChanged();
+    }
+    @Override
+    public void fireTableDataChanged() {
+        super.fireTableDataChanged();
+
+    }
 
     @Override
     public String getColumnName(int column) {
