@@ -1,39 +1,69 @@
 package ru.khav.ProjectNIC;
 
+import lombok.Data;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.models.MeanTableModel;
 import ru.khav.ProjectNIC.services.DownloadDataFromFile;
+import ru.khav.ProjectNIC.services.SimpleAction;
 import ru.khav.ProjectNIC.utill.LoadDataFromFile;
+import ru.khav.ProjectNIC.views.AddressTable;
+import ru.khav.ProjectNIC.views.MeanByteTable;
+import ru.khav.ProjectNIC.views.TableData;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+@Data
 public class MainWindow extends JFrame {
     private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
     private static int countByte = 10;
     private static int address = 10;
-    DefaultTableModel tableModel;
+
+    public static int getCountBytee() {
+        return countByte;
+    }
+
+    public static int getAddresss() {
+        return address;
+    }
+
+    public int upCountByte() {
+        return countByte++;
+    }
+
+    public int upAddress() {
+        return address++;
+    }
+
+    public int downCountByte() {
+        return countByte--;
+    }
+
+    public int downAddress() {
+        return address--;
+    }
+
+    DefaultTableModel fileDataTableModel;
     DefaultTableModel tableAddressModel;
+    MeanTableModel meanTableModel = new MeanTableModel();//иначе не прорисуется
     private JFileChooser fileChooser = null;
     DownloadDataFromFile downloadDataFromFile = new LoadDataFromFile();
-    JTable table;
-    JTable addressTable;
-    JTable meanByteTable;
-    List<String> array = new LinkedList<>();
 
-    List<String> notReactButNames=new ArrayList<>();
+    TableData tableData;
+    AddressTable addressTable;
+    JTable meanByteTable;
+    List<Object> buffer = new ArrayList<>();
 
     private List<String> currentData;
     private List<Byte> currentByteData;
@@ -41,7 +71,6 @@ public class MainWindow extends JFrame {
     CardLayout cardLayout = new CardLayout();
     JPanel mainPanel = new JPanel(cardLayout);
     JPanel firstPanel = new JPanel(new BorderLayout());
-
     JPanel secondPanel = new JPanel(new BorderLayout());
 
     public MainWindow() {
@@ -65,21 +94,17 @@ public class MainWindow extends JFrame {
         // Создание экземпляра JFileChooser
         fileChooser = new JFileChooser();
         firstPanel.setBackground(Color.CYAN);
-
         JButton jButton = new JButton("File");
         JButton openBut = new JButton("Open it");
         openBut.setName("openBut");
         jButton.setName("File");
         firstPanel.add(openBut);
         firstPanel.add(jButton);
-        jButton.addActionListener(new SimpleAction());
-
-
+        jButton.addActionListener(new SimpleAction(this));
         mainPanel.add(firstPanel, "first");
         revalidate();
         repaint();
     }
-
 
     public void configContainer() {
         logger.info("configContainer()");
@@ -88,16 +113,14 @@ public class MainWindow extends JFrame {
         container.setBackground(Color.black);
     }
 
-
     public void dataload(String path) throws IOException {
         logger.info("dataload()");
-        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
-        DataFromFile curData = downloadDataFromFile.getDataFromFile();
+        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));//todo разобраться с кодировкой
+        DataFromFile curData = downloadDataFromFile.getDataTextFromFile();
         currentByteData = curData.getBytes();
         currentData = curData.getHexFormatOfData();
 
-        while(currentByteData.size()<countByte*address)
-        {
+        while (currentByteData.size() < countByte * address) {
             countByte--;
             address--;
         }
@@ -166,7 +189,7 @@ public class MainWindow extends JFrame {
         Vector<String> columnAddressNames = new Vector<>();
         columnAddressNames.add("adress / byte");
 
-        tableModel = new DefaultTableModel(myData, columnNames);
+        fileDataTableModel = new DefaultTableModel(myData, columnNames);
         tableAddressModel = new DefaultTableModel(addresses, columnAddressNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -225,94 +248,11 @@ public class MainWindow extends JFrame {
             columnNames.add(String.valueOf(i));
         }
 
-        tableModel.setDataVector(myData, columnNames);
+        fileDataTableModel.setDataVector(myData, columnNames);
         tableAddressModel.setDataVector(addresses, columnAddrNames);
 
-        table.revalidate();
-        table.repaint();
-    }
-
-    private void scrollTable(int direction) {
-        int currentViewableColumns = table.getVisibleRect().width / table.getColumnModel().getColumn(0).getWidth();
-
-        if (direction == 1) { //r
-            int newColumnIndex = Math.min(table.getSelectedColumn() + currentViewableColumns, table.getColumnCount() - 1);
-            table.scrollRectToVisible(table.getCellRect(0, newColumnIndex, true));
-            table.changeSelection(0, newColumnIndex, false, false);
-        } else { //l
-            int newColumnIndex = Math.max(table.getSelectedColumn() - currentViewableColumns, 0);
-            table.scrollRectToVisible(table.getCellRect(0, newColumnIndex, true));
-            table.changeSelection(0, newColumnIndex, false, false);
-        }
-    }
-
-    class SimpleAction extends AbstractAction {
-        private static final long serialVersionUID = 1L;
-
-        // Обработка события нажатия на кнопку
-        public void actionPerformed(ActionEvent e) {
-            JButton btn = (JButton) e.getSource();
-            System.out.println("Нажатие на кнопку <" + btn.getName() + ">");
-
-            if (btn.getName().equalsIgnoreCase("addrow")) {
-                tableModel.addRow(new Object[]{address++});
-                changeScaleDataTable(currentData, countByte, address);
-            }
-            if (btn.getName().equalsIgnoreCase("addcol")) {
-                tableModel.addColumn(countByte++);
-                changeScaleDataTable(currentData, countByte, address);
-            }
-            if (btn.getName().equalsIgnoreCase("delrow")) {
-                if (tableModel.getRowCount() > 0) {
-                    tableModel.removeRow(address - 2);
-                    address--;
-                    changeScaleDataTable(currentData, countByte, address);
-                }
-            }
-            if (btn.getName().equalsIgnoreCase("delcol")) {
-                if (tableModel.getColumnCount() > 1) {
-                    tableModel.setColumnCount(countByte - 1);
-                    countByte--;
-                    changeScaleDataTable(currentData, countByte, address);
-                }
-            }
-            if (btn.getName().equalsIgnoreCase("exitBut")) {
-                CardLayout cl = (CardLayout) (mainPanel.getLayout());
-                cl.show(mainPanel, "first");
-                currentByteData.clear();
-                currentData.clear();
-                tableModel.setRowCount(0);
-                tableModel.setColumnCount(0);
-                MeanTableModel m=(MeanTableModel) meanByteTable.getModel();
-                m.clear();
-                LoadDataFromFile l =(LoadDataFromFile) downloadDataFromFile;
-                l.clear();
-            }
-            if (btn.getName().equalsIgnoreCase("openBut")) {
-                CardLayout cl = (CardLayout) (mainPanel.getLayout());
-
-                cl.show(mainPanel, "second");
-            }
-            if (btn.getName().equalsIgnoreCase("File")) {
-                fileChooser.setDialogTitle("Выбор директории");
-                //только каталог
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                int result = fileChooser.showOpenDialog(MainWindow.this);
-                // Если директория выбрана, покажем ее в сообщении
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    System.out.println(fileChooser.getSelectedFile().getPath());
-                    //createDynamicTable(array, countByte, address);}
-
-                    try {
-                        dataload(fileChooser.getSelectedFile().getPath());
-                    } catch (Exception ex) {
-                        System.out.println(ex.getMessage());
-                    }
-
-                }
-
-            }
-        }
+        tableData.revalidate();
+        tableData.repaint();
     }
 
     public JTextComponent configDecViev(String cellValue) {
@@ -322,11 +262,11 @@ public class MainWindow extends JFrame {
 
     public JPanel configCenterPanel() {
         logger.info("configCenterPanel()");
-        for (int i = 0; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(80);
+        for (int i = 0; i < tableData.getColumnCount(); i++) {
+            tableData.getColumnModel().getColumn(i).setPreferredWidth(80);
         }
         // Прокручиваемая панель с таблицей
-        JScrollPane scrollPane = new JScrollPane(table,
+        JScrollPane scrollPane = new JScrollPane(tableData,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         JScrollPane scrollPane1 = new JScrollPane(addressTable,
@@ -361,47 +301,41 @@ public class MainWindow extends JFrame {
         JButton addRowButton = new JButton("add row");
         addRowButton.setName("addrow");
         addRowButton.setToolTipText("Добавить строку");
-        addRowButton.addActionListener(new SimpleAction());
+        addRowButton.addActionListener(new SimpleAction(this));
 
         JButton addColumnButton = new JButton("add column");
         addColumnButton.setName("addcol");
         addColumnButton.setToolTipText("Добавить столбец");
-        addColumnButton.addActionListener(new SimpleAction());
+        addColumnButton.addActionListener(new SimpleAction(this));
 
         JButton delRowButton = new JButton("del row");
         delRowButton.setName("delrow");
         delRowButton.setToolTipText("Удалить строку");
-        delRowButton.addActionListener(new SimpleAction());
+        delRowButton.addActionListener(new SimpleAction(this));
 
         JButton delColumnButton = new JButton("del column");
         delColumnButton.setName("delcol");
         delColumnButton.setToolTipText("Удалить столбец");
-        delColumnButton.addActionListener(new SimpleAction());
+        delColumnButton.addActionListener(new SimpleAction(this));
 
         JButton exitBut = new JButton("Exit");
         exitBut.setName("exitBut");
-        exitBut.addActionListener(new SimpleAction());
-
-        notReactButNames.add("addrow");
-        notReactButNames.add("addcol");
-        notReactButNames.add("delrow");
-        notReactButNames.add("delcol");
-        notReactButNames.add("exitBut");
+        exitBut.addActionListener(new SimpleAction(this));
 
 
         tableButtonPanel.add(addRowButton);
         tableButtonPanel.add(addColumnButton);
         tableButtonPanel.add(delColumnButton);
         tableButtonPanel.add(delRowButton);
-        //tableButtonPanel.add(exitBut);
-
-        JButton scrollLeftButton = new JButton("<");
-        scrollLeftButton.addActionListener(e -> scrollTable(-1));
+/*
+    JButton scrollLeftButton = new JButton("<");
+        scrollLeftButton.addActionListener(e -> tableData.scrollTable(-1));
         JButton scrollRightButton = new JButton(">");
-        scrollRightButton.addActionListener(e -> scrollTable(1));
+        scrollRightButton.addActionListener(e -> tableData.scrollTable(1));
 
         tableButtonPanel.add(scrollLeftButton);
-        tableButtonPanel.add(scrollRightButton);
+        tableButtonPanel.add(scrollRightButton);*/
+
 
         // панель с десят знач
         JPanel decNote = new JPanel(new BorderLayout());
@@ -435,10 +369,11 @@ public class MainWindow extends JFrame {
 
     public void showDecMeanConfig() {
         logger.info("showDecMeanConfig()");
-        table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+        tableData.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                int selectedRow = table.getSelectedRow();
-                int[] selectedColumns = table.getSelectedColumns();
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedColumns = tableData.getSelectedColumns();
+                int meanA=3;
                 int mean = 2;
                 int addr = 0;
                 int byteNum = 1;
@@ -446,22 +381,27 @@ public class MainWindow extends JFrame {
 
 
                 for (int col : selectedColumns) {
-                    if (table.isCellSelected(selectedRow, col)) {
-                        Object value = table.getValueAt(selectedRow, col);
+                    if (tableData.isCellSelected(selectedRow, col)) {
+                        Object value = tableData.getValueAt(selectedRow, col);
                         if (indexRow <= 7) {
                             meanByteTable.getModel().setValueAt(Integer.parseInt(value.toString().trim(), 16), indexRow, mean);
                             //todo сделать десятичный вывод значения со знаком и без
                             meanByteTable.getModel().setValueAt(String.format("%8s", Integer.toBinaryString(selectedRow * countByte + col)).replace(' ', '0'), indexRow, addr);
                             meanByteTable.getModel().setValueAt(col, indexRow, byteNum);
+                            String hexVal=value.toString().trim();
+                            int intValue = Integer.parseInt(hexVal, 16);
+                            char ch = (char) intValue;
+                            meanByteTable.getModel().setValueAt(ch, indexRow, meanA);
+
                             indexRow++;
                         }
-                        //System.out.println("Выбрана ячейка [" + selectedRow + ", " + col + "]: " + value);
                     }
                 }
                 for (int i = indexRow; i < 8; i++) {
                     meanByteTable.getModel().setValueAt("", i, mean);
                     meanByteTable.getModel().setValueAt("", i, addr);
                     meanByteTable.getModel().setValueAt("", i, byteNum);
+                    meanByteTable.getModel().setValueAt("", i, meanA);
                 }
             }
         });
@@ -469,24 +409,31 @@ public class MainWindow extends JFrame {
     }
 
 
-    public void editDataConfig() throws IOException {//todo изменение значений в файле блоками и одиночно
+    public void editDataConfig() throws IOException {
+        //todo изменение значений в файле блоками и одиночно
 
         logger.info("editDataConfig()");
-        table.getModel().addTableModelListener(l -> {
+
+        tableData.getModel().addTableModelListener(l -> {
             int row = l.getFirstRow();
             int col = l.getColumn();
             if (row < 0 || col < 0) return;
             int curPos = row * countByte + col;
-            String hexString = (String) table.getModel().getValueAt(row, col);
-            hexString = (hexString == null)?"0":hexString;
+            String hexString = (String) tableData.getModel().getValueAt(row, col);
+            hexString = (hexString == null) ? "0" : hexString;
             int intValue = Integer.parseInt(hexString.trim(), 16); //парсим как hex
             byte byteValue = (byte) intValue;
-            if (curPos < currentData.size() && curPos < currentByteData.size()) {
+            if (curPos >= currentData.size() && curPos >= currentByteData.size()) {
+                        currentData.add(hexString);
+                        currentByteData.add(byteValue);
+
+            } else {
                 currentData.set(curPos, hexString);
                 currentByteData.set(curPos, byteValue);
             }
-            DataFromFile data = new DataFromFile(currentByteData);
+
             try {
+                DataFromFile data = new DataFromFile(currentByteData);
                 downloadDataFromFile.updateDataInFile(data);
             } catch (IOException e) {
                 System.out.println(e.getMessage());
@@ -495,32 +442,121 @@ public class MainWindow extends JFrame {
             logger.info(String.format("Изменена ячейка [%d, %d] -> %s (dec %d, byte %d)",
                     row, col, hexString, intValue, byteValue));
 
-            });
+        });
+        KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(deleteKey, "deleteCells");
+        tableData.getActionMap().put("deleteCells", new AbstractAction() {
+            @Override//удаляем блоки клавишей delete
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
 
 
+                for (int col : selectedCols) {
+                    tableData.setValueAt("0", selectedRow, col);
+                    int curPos = selectedRow * countByte + col;
+                    if (curPos < currentData.size() && curPos < currentByteData.size()) {
+                        currentData.set(curPos, "0");
+                        currentByteData.set(curPos, (byte) 0);
+                    }
+                }
+
+                try {
+                    DataFromFile data = new DataFromFile(currentByteData);
+                    downloadDataFromFile.updateDataInFile(data);
+                } catch (IOException ex) {
+                    logger.severe("Ошибка при сохранении после удаления: " + ex.getMessage());
+                }
+            }
+        });
+
+        KeyStroke ctrlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlC, "addToBuff");
+        tableData.getActionMap().put("addToBuff", new AbstractAction() {
+            @Override//копирование в буфер блока элементов с помощью ctrlс
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
+                buffer.clear();
+                for (int col : selectedCols) {
+                    buffer.add(tableData.getModel().getValueAt(selectedRow, col));
+                }
+            }
+        });
+        KeyStroke ctrlB = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlB, "addAllToBuff");
+        tableData.getActionMap().put("addAllToBuff", new AbstractAction() {
+            @Override//вырезка в буфер блока элементов с помощью ctrlb
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
+                buffer.clear();
+                for (int col : selectedCols) {
+                    int curPos= selectedRow*countByte+col;
+                    if(tableData.getModel().getValueAt(selectedRow, col)==null) {
+                        buffer.add("0");
+                    }else {
+                    buffer.add(tableData.getModel().getValueAt(selectedRow, col));
+                    }
+                    if(curPos<currentData.size()&&curPos<currentByteData.size()){
+                    tableData.setValueAt("0", selectedRow, col);
+                    currentData.set(curPos,"0");
+                    int intValue = Integer.parseInt("0", 16); //парсим как hex
+                    byte byteValue = (byte) intValue;
+                    currentByteData.set(curPos,byteValue);
+                    }
+                }
+                try {
+                    DataFromFile data = new DataFromFile(currentByteData);
+                    downloadDataFromFile.updateDataInFile(data);
+                } catch (IOException ex) {
+                    logger.severe("Ошибка при сохранении после вырезки: " + ex.getMessage());
+                }
+
+            }
+        });
+        KeyStroke ctrlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlV, "addFromBuff");
+        tableData.getActionMap().put("addFromBuff", new AbstractAction() {
+            @Override//вставка блока элементов с помощью ctrlv
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
+                int it = 0;
+                Object value;
+                for (int col : selectedCols) {
+                    value = buffer.get(it++); if (it >= buffer.size()) break;
+                    tableData.getModel().setValueAt(value, selectedRow, col);
+                    int curPos = selectedRow * countByte + col;
+                    int intValue = Integer.parseInt(value.toString().trim(), 16);
+                    byte byteValue = (byte) intValue;
+                    if (curPos >= currentData.size() && curPos >= currentByteData.size()) {
+                        currentData.add(value.toString());
+                        currentByteData.add(byteValue);
+                    } else {
+                        currentData.set(curPos, value.toString());
+                        currentByteData.set(curPos, byteValue);
+                    }
+                }
+                try {
+                    DataFromFile data = new DataFromFile(currentByteData);
+                    downloadDataFromFile.updateDataInFile(data);
+                } catch (IOException ex) {
+                    logger.severe("Ошибка при сохранении после вставки: " + ex.getMessage());
+                }
+            }
+        });
     }
 
     public void configTables() throws IOException {
         logger.info("configTables()");
         //тут данные с файла
-
-        table = new JTable(tableModel);
-        table.getTableHeader().setResizingAllowed(false);
-        table.getTableHeader().setReorderingAllowed(false);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        table.setCellSelectionEnabled(true);
-        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setSelectionBackground(Color.YELLOW);
+        tableData = new TableData(fileDataTableModel);
         editDataConfig();
-
         //тут адреса
-        addressTable = new JTable(tableAddressModel);
-        addressTable.setCellSelectionEnabled(false);
-        addressTable.getColumnModel().setColumnSelectionAllowed(false);
-
+        addressTable = new AddressTable(tableAddressModel);
         //тут значения в другой интерпретации
-        meanByteTable = new JTable(new MeanTableModel());
-        meanByteTable.getTableHeader().setResizingAllowed(false);
+        meanByteTable = new MeanByteTable(meanTableModel);
     }
 
     public static void main(String[] args) {

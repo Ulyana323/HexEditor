@@ -5,6 +5,8 @@ import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.services.DownloadDataFromFile;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+
 public class LoadDataFromFile implements DownloadDataFromFile {
 
     DataFromFile curDataFromFile = new DataFromFile();
@@ -19,26 +21,37 @@ public class LoadDataFromFile implements DownloadDataFromFile {
         return this;
     }
 
-
     @Override
-    public DataFromFile getDataFromFile() throws IOException
-    {
-        int c;
-
-        try(BufferedReader br = new BufferedReader(new FileReader(file.getPath()))){
-            while((c=br.read())!=-1)
-            {
-                curDataFromFile.getBytes().add((byte)c);
-                curDataFromFile.getBytes10().add(c);
+    public DataFromFile getDataBinFromFile() throws IOException {
+        curDataFromFile.clear();
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+            int b;
+            while ((b = bis.read()) != -1) {
+                curDataFromFile.getBytes().add((byte) b);  // Добавляем байт в список байтов
+                curDataFromFile.getBytes10().add(b);       // Десятичное представление байта
             }
-        }catch (IOException e)
-        {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
             throw e;
-
         }
         return curDataFromFile;
     }
+
+    @Override//читаем текст
+    public DataFromFile getDataTextFromFile() throws IOException {
+     curDataFromFile.clear();
+     try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+         int c;
+         while ((c = reader.read()) != -1) {
+             curDataFromFile.getBytes().add((byte) c);  // Добавляем байт в список байтов
+             curDataFromFile.getBytes10().add(c);       // Десятичное представление символа
+         }
+     } catch (IOException e) {
+         System.out.println(e.getMessage());
+         throw e;
+     }
+     return curDataFromFile;
+ }
 
     @Override
     public void updateDataInFile(DataFromFile data) throws IOException{
@@ -49,7 +62,6 @@ public class LoadDataFromFile implements DownloadDataFromFile {
             for(int i=0;i<buffer.length;i++)
             {
                 buffer[i]=data.getBytes().get(i);
-
             }
            br.write(buffer, 0, buffer.length);
         }catch (IOException e)

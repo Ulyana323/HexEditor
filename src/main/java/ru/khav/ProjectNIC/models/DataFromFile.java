@@ -11,26 +11,24 @@ import java.util.List;
 @NoArgsConstructor
 public class DataFromFile {
 
-    public DataFromFile( List<Byte> bytes)
-    {
-        this.bytes=bytes;
+    public DataFromFile(List<Byte> bytes) {
+        this.bytes = bytes;
     }
 
-    private List<Byte> bytes=new LinkedList<>();
+    private List<Byte> bytes = new LinkedList<>();
 
-    private List<Integer> bytes10=new LinkedList<>();
+    private List<Integer> bytes10 = new LinkedList<>();
 
-    public List<String> getHexFormatOfData() throws IOException
-    {
+    public List<String> getHexFormatOfData() throws IOException {
         List<String> lst = new LinkedList<>();
         for (Byte b : this.bytes) {
-            lst.add(String.format("%01X ", b));
+            lst.add(String.format("%01X ",  b & 0xFF));
         }
         //System.out.println(sb.toString());
         return lst;
     }
-    public String getDecFormatOfData() throws IOException
-    {
+
+    public String getDecFormatOfData() throws IOException {
         StringBuilder sb = new StringBuilder();
         for (Integer b : this.bytes10) {
             sb.append(b);
@@ -39,10 +37,9 @@ public class DataFromFile {
         return sb.toString();
     }
 
-public void clear()
-{
-    bytes.clear();
-    bytes10.clear();
-}
+    public void clear() {
+        bytes.clear();
+        bytes10.clear();
+    }
 
 }

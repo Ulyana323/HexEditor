@@ -5,6 +5,7 @@ import ru.khav.ProjectNIC.models.DataFromFile;
 import java.io.IOException;
 
 public interface DownloadDataFromFile {
-     DataFromFile getDataFromFile() throws IOException;
+     DataFromFile getDataTextFromFile() throws IOException;
+    DataFromFile getDataBinFromFile() throws IOException;
     void updateDataInFile(DataFromFile data) throws IOException;;
 }

@@ -1,13 +1,10 @@
 package ru.khav.ProjectNIC.models;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MeanTableModel extends AbstractTableModel {
 
-    Object[][] meanings= new Object[8][3];
+    Object[][] meanings = new Object[8][4];
 
     public void clear() {
         for (int i = 0; i < meanings.length; i++) {
@@ -17,11 +14,12 @@ public class MeanTableModel extends AbstractTableModel {
         }
         fireTableDataChanged();
     }
+
     @Override
     public void fireTableDataChanged() {
         super.fireTableDataChanged();
-
     }
+
 
     @Override
     public String getColumnName(int column) {
@@ -32,6 +30,8 @@ public class MeanTableModel extends AbstractTableModel {
                 return "Byte";
             case 2:
                 return "Dec Mean";
+            case 3:
+                return "UTF Mean";
             default:
                 return null;
         }
@@ -45,13 +45,13 @@ public class MeanTableModel extends AbstractTableModel {
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        meanings[rowIndex][columnIndex]=aValue;
+        meanings[rowIndex][columnIndex] = aValue;
         fireTableCellUpdated(rowIndex, columnIndex); // перерисовка ячейки
     }
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 4;
     }
 
 
@@ -61,8 +61,11 @@ public class MeanTableModel extends AbstractTableModel {
         return false;
     }
 
+
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         return meanings[rowIndex][columnIndex];
     }
+
+
 }
