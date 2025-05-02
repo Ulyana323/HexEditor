@@ -22,48 +22,33 @@ public class LoadDataFromFile implements DownloadDataFromFile {
     }
 
     @Override
-    public DataFromFile getDataBinFromFile() throws IOException {
+    public DataFromFile getDataByteFromFile() throws IOException {
         curDataFromFile.clear();
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-            int b;
-            while ((b = bis.read()) != -1) {
-                curDataFromFile.getBytes().add((byte) b);  // Добавляем байт в список байтов
-                curDataFromFile.getBytes10().add(b);       // Десятичное представление байта
+        try (DataInputStream dis= new DataInputStream(new FileInputStream(file.getPath()))) {
+        while(dis.available()>0){
+            byte b=dis.readByte();
+            int unsign=b & 0xFF;
+            curDataFromFile.getBytes().add(b);
+            curDataFromFile.getBytes10().add(unsign);
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
+        System.out.println(e.getMessage());
+        throw e;
+    }
         return curDataFromFile;
     }
-
-    @Override//читаем текст
-    public DataFromFile getDataTextFromFile() throws IOException {
-     curDataFromFile.clear();
-     try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
-         int c;
-         while ((c = reader.read()) != -1) {
-             curDataFromFile.getBytes().add((byte) c);  // Добавляем байт в список байтов
-             curDataFromFile.getBytes10().add(c);       // Десятичное представление символа
-         }
-     } catch (IOException e) {
-         System.out.println(e.getMessage());
-         throw e;
-     }
-     return curDataFromFile;
- }
 
     @Override
     public void updateDataInFile(DataFromFile data) throws IOException{
 
-        try(BufferedOutputStream br=new BufferedOutputStream(new FileOutputStream(file.getPath())))
+        try(DataOutputStream dos= new DataOutputStream(new FileOutputStream(file.getPath())))
         {
             byte[] buffer = new byte[data.getBytes().size()];
             for(int i=0;i<buffer.length;i++)
             {
                 buffer[i]=data.getBytes().get(i);
             }
-           br.write(buffer, 0, buffer.length);
+          dos.write(buffer, 0, buffer.length);
         }catch (IOException e)
         {
             System.out.println(e.getMessage());

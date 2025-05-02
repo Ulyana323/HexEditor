@@ -29,9 +29,9 @@ public class MeanTableModel extends AbstractTableModel {
             case 1:
                 return "Byte";
             case 2:
-                return "Dec Mean";
+                return "Signed";
             case 3:
-                return "UTF Mean";
+                return "Unsigned";
             default:
                 return null;
         }

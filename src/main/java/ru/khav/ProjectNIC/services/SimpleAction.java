@@ -26,31 +26,32 @@ public class SimpleAction extends AbstractAction {
 
         if (btn.getName().equalsIgnoreCase("addrow")) {
             mainWindow.getFileDataTableModel().addRow(new Object[]{mainWindow.upAddress()});
-            mainWindow.changeScaleDataTable(mainWindow.getCurrentData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
+            mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
         }
         if (btn.getName().equalsIgnoreCase("addcol")) {
             mainWindow.getFileDataTableModel().addColumn(mainWindow.upCountByte());
-            mainWindow.changeScaleDataTable(mainWindow.getCurrentData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
+            mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
         }
         if (btn.getName().equalsIgnoreCase("delrow")) {
             if (mainWindow.getFileDataTableModel().getRowCount() > 0) {
                 mainWindow.getFileDataTableModel().removeRow(mainWindow.getAddresss() - 2);
                 mainWindow.downAddress();
-                mainWindow.changeScaleDataTable(mainWindow.getCurrentData(),mainWindow.getCountBytee(), mainWindow.getAddresss());
+                mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(),mainWindow.getCountBytee(), mainWindow.getAddresss());
             }
         }
         if (btn.getName().equalsIgnoreCase("delcol")) {
             if( mainWindow.getFileDataTableModel().getColumnCount() > 1) {
                 mainWindow.getFileDataTableModel().setColumnCount(mainWindow.getCountBytee() - 1);
                 mainWindow.downCountByte();
-                mainWindow.changeScaleDataTable(mainWindow.getCurrentData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
+                mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
             }
         }
         if (btn.getName().equalsIgnoreCase("exitBut")) {
             CardLayout cl = (CardLayout) (mainWindow.getMainPanel().getLayout());
             cl.show(mainWindow.getMainPanel(), "first");
            mainWindow.getCurrentByteData().clear();
-            mainWindow.getCurrentData().clear();
+           mainWindow.getCurrentIntData().clear();
+            mainWindow.getCurrentStrData().clear();
             mainWindow.getFileDataTableModel().setRowCount(0);
             mainWindow.getFileDataTableModel().setColumnCount(0);
             MeanTableModel m=(MeanTableModel) mainWindow.getMeanByteTable().getModel();

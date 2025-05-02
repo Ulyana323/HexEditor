@@ -11,8 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 public class DataFromFile {
 
-    public DataFromFile(List<Byte> bytes) {
+    public DataFromFile(List<Byte> bytes,List<Integer> bytes10) {
         this.bytes = bytes;
+        this.bytes10=bytes10;
     }
 
     private List<Byte> bytes = new LinkedList<>();
@@ -21,8 +22,8 @@ public class DataFromFile {
 
     public List<String> getHexFormatOfData() throws IOException {
         List<String> lst = new LinkedList<>();
-        for (Byte b : this.bytes) {
-            lst.add(String.format("%01X ",  b & 0xFF));
+        for (int b : this.bytes10) {
+            lst.add(Integer.toString(b));//беззнак вид
         }
         //System.out.println(sb.toString());
         return lst;

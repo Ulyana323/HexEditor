@@ -65,8 +65,10 @@ public class MainWindow extends JFrame {
     JTable meanByteTable;
     List<Object> buffer = new ArrayList<>();
 
-    private List<String> currentData;
+    private List<Integer> currentIntData;
     private List<Byte> currentByteData;
+    private List<String> currentStrData;
+
     Container container = getContentPane();
     CardLayout cardLayout = new CardLayout();
     JPanel mainPanel = new JPanel(cardLayout);
@@ -115,16 +117,17 @@ public class MainWindow extends JFrame {
 
     public void dataload(String path) throws IOException {
         logger.info("dataload()");
-        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));//todo разобраться с кодировкой
-        DataFromFile curData = downloadDataFromFile.getDataTextFromFile();
+        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
+        DataFromFile curData = downloadDataFromFile.getDataByteFromFile();
         currentByteData = curData.getBytes();
-        currentData = curData.getHexFormatOfData();
+        currentIntData = curData.getBytes10();
+        currentStrData = curData.getHexFormatOfData();
 
-        while (currentByteData.size() < countByte * address) {
+        while (currentByteData.size() < countByte * address) {//чтоб начальное количество ячеек не превышало количество считанного
             countByte--;
             address--;
         }
-        createDynamicTable(currentData, countByte, address);
+        createDynamicTable(currentStrData, countByte, address);
         //createMenu();
         revalidate();
         repaint();
@@ -157,7 +160,7 @@ public class MainWindow extends JFrame {
         logger.info("createDynamicTable()");
         Vector<Vector<String>> myData = new Vector<>();
         Vector<Vector<String>> addresses = new Vector<>();
-        currentData = dataToView;
+        currentStrData = dataToView;
         int indexData = 0;
 
 
@@ -373,7 +376,8 @@ public class MainWindow extends JFrame {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedColumns = tableData.getSelectedColumns();
-                int meanA=3;
+
+                int meanA = 3;
                 int mean = 2;
                 int addr = 0;
                 int byteNum = 1;
@@ -381,17 +385,16 @@ public class MainWindow extends JFrame {
 
 
                 for (int col : selectedColumns) {
-                    if (tableData.isCellSelected(selectedRow, col)) {
-                        Object value = tableData.getValueAt(selectedRow, col);
+                    int curPos = selectedRow * countByte + col;
+                    if (tableData.isCellSelected(selectedRow, col) && curPos<currentByteData.size()) {
+                        String value = currentStrData.get(curPos);
+                        byte byteValue = currentByteData.get(curPos);
+                        int unsignValue = currentIntData.get(curPos);
                         if (indexRow <= 7) {
-                            meanByteTable.getModel().setValueAt(Integer.parseInt(value.toString().trim(), 16), indexRow, mean);
-                            //todo сделать десятичный вывод значения со знаком и без
+                            meanByteTable.getModel().setValueAt(Integer.toString(byteValue), indexRow, mean);
                             meanByteTable.getModel().setValueAt(String.format("%8s", Integer.toBinaryString(selectedRow * countByte + col)).replace(' ', '0'), indexRow, addr);
                             meanByteTable.getModel().setValueAt(col, indexRow, byteNum);
-                            String hexVal=value.toString().trim();
-                            int intValue = Integer.parseInt(hexVal, 16);
-                            char ch = (char) intValue;
-                            meanByteTable.getModel().setValueAt(ch, indexRow, meanA);
+                            meanByteTable.getModel().setValueAt(Integer.toString(unsignValue), indexRow, meanA);
 
                             indexRow++;
                         }
@@ -413,36 +416,27 @@ public class MainWindow extends JFrame {
         //todo изменение значений в файле блоками и одиночно
 
         logger.info("editDataConfig()");
-
+        //одиночное изменение
         tableData.getModel().addTableModelListener(l -> {
             int row = l.getFirstRow();
             int col = l.getColumn();
-            if (row < 0 || col < 0) return;
+            if (row < 0 || col < 0) return;//todo размерность списков различается
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
-            hexString = (hexString == null) ? "0" : hexString;
-            int intValue = Integer.parseInt(hexString.trim(), 16); //парсим как hex
-            byte byteValue = (byte) intValue;
-            if (curPos >= currentData.size() && curPos >= currentByteData.size()) {
-                        currentData.add(hexString);
-                        currentByteData.add(byteValue);
-
+            if (curPos >= currentStrData.size()) {
+                wideCurData(hexString, curPos);
             } else {
-                currentData.set(curPos, hexString);
-                currentByteData.set(curPos, byteValue);
+                updateCurData(hexString, curPos);
             }
-
             try {
-                DataFromFile data = new DataFromFile(currentByteData);
+                DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                 downloadDataFromFile.updateDataInFile(data);
             } catch (IOException e) {
                 System.out.println(e.getMessage());
                 throw new RuntimeException(e);
-            }
-            logger.info(String.format("Изменена ячейка [%d, %d] -> %s (dec %d, byte %d)",
-                    row, col, hexString, intValue, byteValue));
+            }});
 
-        });
+        //удаление одиночное и блочно
         KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(deleteKey, "deleteCells");
         tableData.getActionMap().put("deleteCells", new AbstractAction() {
@@ -455,14 +449,16 @@ public class MainWindow extends JFrame {
                 for (int col : selectedCols) {
                     tableData.setValueAt("0", selectedRow, col);
                     int curPos = selectedRow * countByte + col;
-                    if (curPos < currentData.size() && curPos < currentByteData.size()) {
-                        currentData.set(curPos, "0");
-                        currentByteData.set(curPos, (byte) 0);
+                    if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
+                       updateCurData("0",curPos);
+                    }else
+                    {
+                        wideCurData("0",curPos);
                     }
                 }
 
                 try {
-                    DataFromFile data = new DataFromFile(currentByteData);
+                    DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после удаления: " + ex.getMessage());
@@ -492,22 +488,22 @@ public class MainWindow extends JFrame {
                 int[] selectedCols = tableData.getSelectedColumns();
                 buffer.clear();
                 for (int col : selectedCols) {
-                    int curPos= selectedRow*countByte+col;
-                    if(tableData.getModel().getValueAt(selectedRow, col)==null) {
+                    int curPos = selectedRow * countByte + col;
+                    if (tableData.getModel().getValueAt(selectedRow, col) == null) {
                         buffer.add("0");
-                    }else {
-                    buffer.add(tableData.getModel().getValueAt(selectedRow, col));
+                    } else {
+                        buffer.add(tableData.getModel().getValueAt(selectedRow, col));
                     }
-                    if(curPos<currentData.size()&&curPos<currentByteData.size()){
-                    tableData.setValueAt("0", selectedRow, col);
-                    currentData.set(curPos,"0");
-                    int intValue = Integer.parseInt("0", 16); //парсим как hex
-                    byte byteValue = (byte) intValue;
-                    currentByteData.set(curPos,byteValue);
+                    if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
+                        tableData.setValueAt("0", selectedRow, col);
+                        currentStrData.set(curPos, "0");
+                        int intValue = Integer.parseInt("0", 16); //парсим как hex
+                        byte byteValue = (byte) intValue;
+                        currentByteData.set(curPos, byteValue);
                     }
                 }
                 try {
-                    DataFromFile data = new DataFromFile(currentByteData);
+                    DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после вырезки: " + ex.getMessage());
@@ -525,21 +521,22 @@ public class MainWindow extends JFrame {
                 int it = 0;
                 Object value;
                 for (int col : selectedCols) {
-                    value = buffer.get(it++); if (it >= buffer.size()) break;
+                    value = buffer.get(it++);
+                    if (it >= buffer.size()) break;
                     tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     int intValue = Integer.parseInt(value.toString().trim(), 16);
                     byte byteValue = (byte) intValue;
-                    if (curPos >= currentData.size() && curPos >= currentByteData.size()) {
-                        currentData.add(value.toString());
+                    if (curPos >= currentStrData.size() && curPos >= currentByteData.size()) {
+                        currentStrData.add(value.toString());
                         currentByteData.add(byteValue);
                     } else {
-                        currentData.set(curPos, value.toString());
+                        currentStrData.set(curPos, value.toString());
                         currentByteData.set(curPos, byteValue);
                     }
                 }
                 try {
-                    DataFromFile data = new DataFromFile(currentByteData);
+                    DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после вставки: " + ex.getMessage());
@@ -557,6 +554,30 @@ public class MainWindow extends JFrame {
         addressTable = new AddressTable(tableAddressModel);
         //тут значения в другой интерпретации
         meanByteTable = new MeanByteTable(meanTableModel);
+    }
+
+    public void updateCurData(String hexString, int curPos) {
+        hexString = (hexString == null) ? "0" : hexString;
+        int intValue = Integer.parseInt(hexString.trim(), 16); //парсим как hex
+        byte byteValue = (byte) intValue;
+        currentStrData.set(curPos, hexString);
+        currentByteData.set(curPos, byteValue);
+        currentIntData.add(curPos, intValue);
+    }
+
+    public void wideCurData(String hexString, int curPos) {
+        for (int i = currentStrData.size(); i <= curPos; i++) {
+            if (i == curPos) {
+                currentStrData.add("0");
+                currentByteData.add((byte) 0);
+                currentIntData.add(0);
+                updateCurData(hexString,curPos);
+                return;
+            }
+            currentStrData.add("0");
+            currentByteData.add((byte) 0);
+            currentIntData.add(0);
+        }
     }
 
     public static void main(String[] args) {
