@@ -23,7 +23,7 @@ public class DataFromFile {
     public List<String> getHexFormatOfData() throws IOException {
         List<String> lst = new LinkedList<>();
         for (int b : this.bytes10) {
-            lst.add(Integer.toString(b));//беззнак вид
+            lst.add(String.format("%02X",b));//беззнак вид
         }
         //System.out.println(sb.toString());
         return lst;

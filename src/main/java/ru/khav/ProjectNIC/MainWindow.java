@@ -386,7 +386,7 @@ public class MainWindow extends JFrame {
 
                 for (int col : selectedColumns) {
                     int curPos = selectedRow * countByte + col;
-                    if (tableData.isCellSelected(selectedRow, col) && curPos<currentByteData.size()) {
+                    if (tableData.isCellSelected(selectedRow, col) && curPos < currentByteData.size()) {
                         String value = currentStrData.get(curPos);
                         byte byteValue = currentByteData.get(curPos);
                         int unsignValue = currentIntData.get(curPos);
@@ -412,7 +412,7 @@ public class MainWindow extends JFrame {
     }
 
 
-    public void editDataConfig() throws IOException {
+    public void editDataConfig() {
         //todo изменение значений в файле блоками и одиночно
 
         logger.info("editDataConfig()");
@@ -420,10 +420,10 @@ public class MainWindow extends JFrame {
         tableData.getModel().addTableModelListener(l -> {
             int row = l.getFirstRow();
             int col = l.getColumn();
-            if (row < 0 || col < 0) return;//todo размерность списков различается
+            if (row < 0 || col < 0) return;
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
-            if (curPos >= currentStrData.size()) {
+            if (curPos >= currentByteData.size()) {
                 wideCurData(hexString, curPos);
             } else {
                 updateCurData(hexString, curPos);
@@ -434,7 +434,8 @@ public class MainWindow extends JFrame {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
                 throw new RuntimeException(e);
-            }});
+            }
+        });
 
         //удаление одиночное и блочно
         KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
@@ -444,19 +445,15 @@ public class MainWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
-
-
                 for (int col : selectedCols) {
                     tableData.setValueAt("0", selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
-                       updateCurData("0",curPos);
-                    }else
-                    {
-                        wideCurData("0",curPos);
+                        updateCurData("0", curPos);
+                    } else {
+                        wideCurData("0", curPos);
                     }
                 }
-
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
@@ -465,7 +462,7 @@ public class MainWindow extends JFrame {
                 }
             }
         });
-
+        //копирование без вырезания
         KeyStroke ctrlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlC, "addToBuff");
         tableData.getActionMap().put("addToBuff", new AbstractAction() {
@@ -494,12 +491,9 @@ public class MainWindow extends JFrame {
                     } else {
                         buffer.add(tableData.getModel().getValueAt(selectedRow, col));
                     }
-                    if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
-                        tableData.setValueAt("0", selectedRow, col);
-                        currentStrData.set(curPos, "0");
-                        int intValue = Integer.parseInt("0", 16); //парсим как hex
-                        byte byteValue = (byte) intValue;
-                        currentByteData.set(curPos, byteValue);
+                    if (curPos < currentByteData.size()) {
+                        tableData.getModel().setValueAt("0", selectedRow, col);
+                        updateCurData("0", curPos);
                     }
                 }
                 try {
@@ -508,7 +502,7 @@ public class MainWindow extends JFrame {
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после вырезки: " + ex.getMessage());
                 }
-
+                secondPanel.revalidate();
             }
         });
         KeyStroke ctrlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
@@ -519,20 +513,17 @@ public class MainWindow extends JFrame {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
                 int it = 0;
-                Object value;
+                String value;
                 for (int col : selectedCols) {
-                    value = buffer.get(it++);
                     if (it >= buffer.size()) break;
+                    value = (String) buffer.get(it);
                     tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
-                    int intValue = Integer.parseInt(value.toString().trim(), 16);
-                    byte byteValue = (byte) intValue;
-                    if (curPos >= currentStrData.size() && curPos >= currentByteData.size()) {
-                        currentStrData.add(value.toString());
-                        currentByteData.add(byteValue);
+                    it++;
+                    if (curPos >= currentByteData.size()) {
+                        wideCurData(value, curPos);
                     } else {
-                        currentStrData.set(curPos, value.toString());
-                        currentByteData.set(curPos, byteValue);
+                        updateCurData(value, curPos);
                     }
                 }
                 try {
@@ -566,17 +557,18 @@ public class MainWindow extends JFrame {
     }
 
     public void wideCurData(String hexString, int curPos) {
-        for (int i = currentStrData.size(); i <= curPos; i++) {
+        for (int i = currentByteData.size(); i <= curPos; i++) {
             if (i == curPos) {
-                currentStrData.add("0");
+                currentStrData.set(i, "0");
                 currentByteData.add((byte) 0);
                 currentIntData.add(0);
-                updateCurData(hexString,curPos);
+                updateCurData(hexString, curPos);
                 return;
             }
-            currentStrData.add("0");
+            currentStrData.set(i, "0");
             currentByteData.add((byte) 0);
             currentIntData.add(0);
+            updateCurData(hexString, curPos);
         }
     }
 

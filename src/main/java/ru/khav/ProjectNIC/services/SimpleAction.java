@@ -11,8 +11,6 @@ import java.awt.event.ActionEvent;
 public class SimpleAction extends AbstractAction {
 
     MainWindow mainWindow;
-
-
     public SimpleAction(MainWindow mainWindow)
     {
         this.mainWindow=mainWindow;
