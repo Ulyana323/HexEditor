@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Data
 public class MainWindow extends JFrame {
@@ -413,8 +414,6 @@ public class MainWindow extends JFrame {
 
 
     public void editDataConfig() {
-        //todo изменение значений в файле блоками и одиночно
-
         logger.info("editDataConfig()");
         //одиночное изменение
         tableData.getModel().addTableModelListener(l -> {
@@ -476,6 +475,7 @@ public class MainWindow extends JFrame {
                 }
             }
         });
+        //вырезка
         KeyStroke ctrlB = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlB, "addAllToBuff");
         tableData.getActionMap().put("addAllToBuff", new AbstractAction() {
@@ -509,7 +509,7 @@ public class MainWindow extends JFrame {
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlV, "addFromBuff");
         tableData.getActionMap().put("addFromBuff", new AbstractAction() {
             @Override//вставка блока элементов с помощью ctrlv
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {//todo чтобы полная вставка
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
                 int it = 0;
@@ -530,7 +530,44 @@ public class MainWindow extends JFrame {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
-                    logger.severe("Ошибка при сохранении после вставки: " + ex.getMessage());
+                    logger.severe("Ошибка при сохранении после вставки c заменой: " + ex.getMessage());
+                }
+            }
+        });
+        KeyStroke ctrlX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlX, "addXFromBuff");
+        tableData.getActionMap().put("addXFromBuff", new AbstractAction() {
+            @Override//вставка блока элементов с помощью ctrlX
+            public void actionPerformed(ActionEvent e) {//todo баги исправить
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
+                int posFromCopy=selectedRow*countByte+selectedCols[0];
+                int posToInsert=selectedRow*countByte+selectedCols[selectedCols.length-1]+1;
+                List<Byte> toInsByte=new ArrayList<>(currentByteData.subList(posFromCopy,currentByteData.size()-1));
+                List<Integer> toInsInt=new ArrayList<>(currentIntData.subList(posFromCopy,currentIntData.size()-1));
+                List<String> toInsStr=new ArrayList<>(currentStrData.subList(posFromCopy,currentStrData.size()-1));
+                int it = 0;
+                String value;
+                wideCurDataWithoutChange(selectedCols.length);
+                for (int col : selectedCols) {
+                    if (it >= buffer.size()) break;
+                    value = (String) buffer.get(it);
+                    tableData.getModel().setValueAt(value, selectedRow, col);
+                    int curPos = selectedRow * countByte + col;
+                    it++;
+                    if (curPos >= currentByteData.size()) {
+                        wideCurData(value, curPos);
+                    } else {
+                        updateCurData(value, curPos);
+                    }
+                }
+                updateBalanceCurDataWider(toInsByte,toInsInt,toInsStr,posToInsert);
+
+                try {
+                    DataFromFile data = new DataFromFile(currentByteData, currentIntData);
+                    downloadDataFromFile.updateDataInFile(data);
+                } catch (IOException ex) {
+                    logger.severe("Ошибка при сохранении после вставки без замены: " + ex.getMessage());
                 }
             }
         });
@@ -553,7 +590,7 @@ public class MainWindow extends JFrame {
         byte byteValue = (byte) intValue;
         currentStrData.set(curPos, hexString);
         currentByteData.set(curPos, byteValue);
-        currentIntData.add(curPos, intValue);
+        currentIntData.set(curPos, intValue);
     }
 
     public void wideCurData(String hexString, int curPos) {
@@ -570,6 +607,18 @@ public class MainWindow extends JFrame {
             currentIntData.add(0);
             updateCurData(hexString, curPos);
         }
+    }
+    public void wideCurDataWithoutChange(int size) {
+        for (int i = 0; i <= size; i++) {
+            currentByteData.add((byte) 0);
+            currentIntData.add(0);
+        }
+    }
+    public void updateBalanceCurDataWider(List<Byte> tmp,List<Integer> tm,List<String> t,int indexFrom) {
+    currentByteData.addAll(indexFrom,tmp);
+    currentIntData.addAll(indexFrom,tm);
+    currentStrData.addAll(indexFrom,t);
+    changeScaleDataTable(currentStrData,countByte,address);
     }
 
     public static void main(String[] args) {
