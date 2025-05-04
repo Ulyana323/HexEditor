@@ -78,7 +78,7 @@ public class MainWindow extends JFrame {
 
     public MainWindow() {
         logger.info("Mainwinow()");
-        setSize(2000, 1000);
+        setSize(4000, 1000);
         setResizable(false);
         setTitle("trying...");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -259,10 +259,6 @@ public class MainWindow extends JFrame {
         tableData.repaint();
     }
 
-    public JTextComponent configDecViev(String cellValue) {
-        JTextField jTextField = new JTextField(30);
-        return jTextField;
-    }
 
     public JPanel configCenterPanel() {
         logger.info("configCenterPanel()");
@@ -300,7 +296,7 @@ public class MainWindow extends JFrame {
 
     public JPanel configSouthPanel() {
         logger.info("configSouthPanel()");
-        JPanel tableButtonPanel = new JPanel();
+        JPanel tableButtonPanel = new JPanel(new GridLayout(2, 4, 5, 5));
 
         JButton addRowButton = new JButton("add row");
         addRowButton.setName("addrow");
@@ -326,19 +322,21 @@ public class MainWindow extends JFrame {
         exitBut.setName("exitBut");
         exitBut.addActionListener(new SimpleAction(this));
 
+        JButton up = new JButton("upPage");
+        up.setName("upPage");
+        up.addActionListener(new SimpleAction(this));
+
+        JButton down = new JButton("downPage");
+        down.setName("downPage");
+        down.addActionListener(new SimpleAction(this));
+
 
         tableButtonPanel.add(addRowButton);
         tableButtonPanel.add(addColumnButton);
         tableButtonPanel.add(delColumnButton);
         tableButtonPanel.add(delRowButton);
-/*
-    JButton scrollLeftButton = new JButton("<");
-        scrollLeftButton.addActionListener(e -> tableData.scrollTable(-1));
-        JButton scrollRightButton = new JButton(">");
-        scrollRightButton.addActionListener(e -> tableData.scrollTable(1));
-
-        tableButtonPanel.add(scrollLeftButton);
-        tableButtonPanel.add(scrollRightButton);*/
+        tableButtonPanel.add(up);
+        tableButtonPanel.add(down);
 
 
         // панель с десят знач
@@ -422,8 +420,9 @@ public class MainWindow extends JFrame {
             if (row < 0 || col < 0) return;
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
-            if (curPos >= currentByteData.size()) {
-                wideCurData(hexString, curPos);
+            if (curPos >= currentByteData.size()) {//todo проверить
+                if(downloadDataFromFile.isLastPage()){
+                wideCurData(hexString, curPos);}
             } else {
                 updateCurData(hexString, curPos);
             }
@@ -449,9 +448,9 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
                         updateCurData("0", curPos);
-                    } else {
+                    }/* else {
                         wideCurData("0", curPos);
-                    }
+                    }*/
                 }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
@@ -509,7 +508,7 @@ public class MainWindow extends JFrame {
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlV, "addFromBuff");
         tableData.getActionMap().put("addFromBuff", new AbstractAction() {
             @Override//вставка блока элементов с помощью ctrlv
-            public void actionPerformed(ActionEvent e) {//todo чтобы полная вставка
+            public void actionPerformed(ActionEvent e) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
                 int it = 0;
@@ -521,7 +520,8 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        wideCurData(value, curPos);
+                        if(downloadDataFromFile.isLastPage()){//todo check!
+                        wideCurData(value, curPos);}
                     } else {
                         updateCurData(value, curPos);
                     }
@@ -556,7 +556,8 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        wideCurData(value, curPos);
+                        if(downloadDataFromFile.isLastPage()){//todo check!
+                        wideCurData(value, curPos);}
                     } else {
                         updateCurData(value, curPos);
                     }

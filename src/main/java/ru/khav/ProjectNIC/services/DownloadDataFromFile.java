@@ -6,5 +6,6 @@ import java.io.IOException;
 
 public interface DownloadDataFromFile {
     DataFromFile getDataByteFromFile() throws IOException;
-    void updateDataInFile(DataFromFile data) throws IOException;;
+    void updateDataInFile(DataFromFile data) throws IOException;
+   boolean isLastPage();
 }
