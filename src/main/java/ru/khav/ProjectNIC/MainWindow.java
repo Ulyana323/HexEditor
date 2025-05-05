@@ -515,13 +515,13 @@ public class MainWindow extends JFrame {
                 String value;
                 for (int col : selectedCols) {
                     if (it >= buffer.size()) break;
+                    if(!downloadDataFromFile.isLastPage()) break;
                     value = (String) buffer.get(it);
                     tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        if(downloadDataFromFile.isLastPage()){//todo check!
-                        wideCurData(value, curPos);}
+                        wideCurData(value, curPos);
                     } else {
                         updateCurData(value, curPos);
                     }
@@ -603,10 +603,10 @@ public class MainWindow extends JFrame {
                 updateCurData(hexString, curPos);
                 return;
             }
-            currentStrData.set(i, "0");
+            currentStrData.add("");
             currentByteData.add((byte) 0);
             currentIntData.add(0);
-            updateCurData(hexString, curPos);
+
         }
     }
     public void wideCurDataWithoutChange(int size) {
