@@ -1,6 +1,7 @@
 package ru.khav.ProjectNIC;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.models.MeanTableModel;
 import ru.khav.ProjectNIC.services.DownloadDataFromFile;
@@ -25,11 +26,13 @@ import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+
 @Data
 public class MainWindow extends JFrame {
     private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
     private static int countByte = 10;
     private static int address = 10;
+    private static int MAX_BYTES = 200;
 
     public static int getCountBytee() {
         return countByte;
@@ -116,10 +119,46 @@ public class MainWindow extends JFrame {
         container.setBackground(Color.black);
     }
 
-    public void dataload(String path) throws IOException {
+    public synchronized void dataload(String path) throws IOException {
         logger.info("dataload()");
         ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
         DataFromFile curData = downloadDataFromFile.getDataByteFromFile();
+        currentByteData = curData.getBytes();
+        currentIntData = curData.getBytes10();
+        currentStrData = curData.getHexFormatOfData();
+
+        while (currentByteData.size() < countByte * address) {//чтоб начальное количество ячеек не превышало количество считанного
+            countByte--;
+            address--;
+        }
+        createDynamicTable(currentStrData, countByte, address);
+        //createMenu();
+        revalidate();
+        repaint();
+    }
+
+    public void dataloadNext() throws IOException {
+        clear();
+        logger.info("dataload()");
+        DataFromFile curData = downloadDataFromFile.getNextDataFromFile();
+        currentByteData = curData.getBytes();
+        currentIntData = curData.getBytes10();
+        currentStrData = curData.getHexFormatOfData();
+
+        while (currentByteData.size() < countByte * address) {//чтоб начальное количество ячеек не превышало количество считанного
+            countByte--;
+            address--;
+        }
+        createDynamicTable(currentStrData, countByte, address);
+        //createMenu();
+        revalidate();
+        repaint();
+    }
+
+    public void dataloadPrev() throws IOException {
+        clear();
+        logger.info("dataload()");
+        DataFromFile curData = downloadDataFromFile.getPreviousDataFromFile();
         currentByteData = curData.getBytes();
         currentIntData = curData.getBytes10();
         currentStrData = curData.getHexFormatOfData();
@@ -420,9 +459,10 @@ public class MainWindow extends JFrame {
             if (row < 0 || col < 0) return;
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
-            if (curPos >= currentByteData.size()) {//todo проверить
-                if(downloadDataFromFile.isLastPage()){
-                wideCurData(hexString, curPos);}
+            if (curPos >= currentByteData.size()) {
+                if (downloadDataFromFile.isLastPage()) {
+                    wideCurData(hexString, curPos);
+                }
             } else {
                 updateCurData(hexString, curPos);
             }
@@ -448,9 +488,7 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
                         updateCurData("0", curPos);
-                    }/* else {
-                        wideCurData("0", curPos);
-                    }*/
+                    }
                 }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
@@ -515,12 +553,12 @@ public class MainWindow extends JFrame {
                 String value;
                 for (int col : selectedCols) {
                     if (it >= buffer.size()) break;
-                    if(!downloadDataFromFile.isLastPage()) break;
                     value = (String) buffer.get(it);
                     tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
+                        if (!downloadDataFromFile.isLastPage()) break;
                         wideCurData(value, curPos);
                     } else {
                         updateCurData(value, curPos);
@@ -538,32 +576,34 @@ public class MainWindow extends JFrame {
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlX, "addXFromBuff");
         tableData.getActionMap().put("addXFromBuff", new AbstractAction() {
             @Override//вставка блока элементов с помощью ctrlX
-            public void actionPerformed(ActionEvent e) {//todo баги исправить
+            public void actionPerformed(ActionEvent e) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
-                int posFromCopy=selectedRow*countByte+selectedCols[0];
-                int posToInsert=selectedRow*countByte+selectedCols[selectedCols.length-1]+1;
-                List<Byte> toInsByte=new ArrayList<>(currentByteData.subList(posFromCopy,currentByteData.size()-1));
-                List<Integer> toInsInt=new ArrayList<>(currentIntData.subList(posFromCopy,currentIntData.size()-1));
-                List<String> toInsStr=new ArrayList<>(currentStrData.subList(posFromCopy,currentStrData.size()-1));
+                int posFromCopy = selectedRow * countByte + selectedCols[0];
+                int posToInsert = selectedRow * countByte + selectedCols[selectedCols.length - 1] + 1;
+                List<Byte> toInsByte = new ArrayList<>(currentByteData.subList(posFromCopy, currentByteData.size() - 1));
+                List<Integer> toInsInt = new ArrayList<>(currentIntData.subList(posFromCopy, currentIntData.size() - 1));
+                List<String> toInsStr = new ArrayList<>(currentStrData.subList(posFromCopy, currentStrData.size() - 1));
                 int it = 0;
                 String value;
                 wideCurDataWithoutChange(selectedCols.length);
                 for (int col : selectedCols) {
                     if (it >= buffer.size()) break;
+                    if (!downloadDataFromFile.isLastPage()) break;
                     value = (String) buffer.get(it);
                     tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        if(downloadDataFromFile.isLastPage()){//todo check!
-                        wideCurData(value, curPos);}
+                        wideCurData(value, curPos);
+
                     } else {
                         updateCurData(value, curPos);
                     }
                 }
-                updateBalanceCurDataWider(toInsByte,toInsInt,toInsStr,posToInsert);
-
+                if (downloadDataFromFile.isLastPage()) {
+                    updateBalanceCurDataWider(toInsByte, toInsInt, toInsStr, posToInsert);
+                }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
@@ -609,17 +649,32 @@ public class MainWindow extends JFrame {
 
         }
     }
+
     public void wideCurDataWithoutChange(int size) {
         for (int i = 0; i <= size; i++) {
             currentByteData.add((byte) 0);
             currentIntData.add(0);
         }
     }
-    public void updateBalanceCurDataWider(List<Byte> tmp,List<Integer> tm,List<String> t,int indexFrom) {
-    currentByteData.addAll(indexFrom,tmp);
-    currentIntData.addAll(indexFrom,tm);
-    currentStrData.addAll(indexFrom,t);
-    changeScaleDataTable(currentStrData,countByte,address);
+
+    public void updateBalanceCurDataWider(List<Byte> tmp, List<Integer> tm, List<String> t, int indexFrom) {
+        currentByteData.addAll(indexFrom, tmp);
+        currentIntData.addAll(indexFrom, tm);
+        currentStrData.addAll(indexFrom, t);
+        changeScaleDataTable(currentStrData, countByte, address);
+    }
+
+    public void clear() {
+        getCurrentByteData().clear();
+        getCurrentIntData().clear();
+        getCurrentStrData().clear();
+        getFileDataTableModel().setRowCount(0);
+        getFileDataTableModel().setColumnCount(0);
+        MeanTableModel m = (MeanTableModel) getMeanByteTable().getModel();
+        m.clear();
+        LoadDataFromFile l = (LoadDataFromFile) getDownloadDataFromFile();
+        l.clear();
+        getSecondPanel().removeAll();
     }
 
     public static void main(String[] args) {

@@ -7,6 +7,7 @@ import ru.khav.ProjectNIC.utill.LoadDataFromFile;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 public class SimpleAction extends AbstractAction {
 
@@ -47,16 +48,7 @@ public class SimpleAction extends AbstractAction {
         if (btn.getName().equalsIgnoreCase("exitBut")) {
             CardLayout cl = (CardLayout) (mainWindow.getMainPanel().getLayout());
             cl.show(mainWindow.getMainPanel(), "first");
-           mainWindow.getCurrentByteData().clear();
-           mainWindow.getCurrentIntData().clear();
-            mainWindow.getCurrentStrData().clear();
-            mainWindow.getFileDataTableModel().setRowCount(0);
-            mainWindow.getFileDataTableModel().setColumnCount(0);
-            MeanTableModel m=(MeanTableModel) mainWindow.getMeanByteTable().getModel();
-            m.clear();
-            LoadDataFromFile l =(LoadDataFromFile) mainWindow.getDownloadDataFromFile();
-            l.clear();
-            mainWindow.getSecondPanel().removeAll();
+           mainWindow.clear();
         }
         if (btn.getName().equalsIgnoreCase("openBut")) {
             CardLayout cl = (CardLayout) (mainWindow.getMainPanel().getLayout());
@@ -83,5 +75,20 @@ public class SimpleAction extends AbstractAction {
             }
 
         }
+        if (btn.getName().equalsIgnoreCase("upPage")){
+            try {
+                mainWindow.dataloadNext();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        if (btn.getName().equalsIgnoreCase("downPage")){
+            try {
+                mainWindow.dataloadPrev();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
     }
 }

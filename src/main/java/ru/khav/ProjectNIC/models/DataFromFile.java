@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -42,5 +43,16 @@ public class DataFromFile {
         bytes.clear();
         bytes10.clear();
     }
+
+    @Override
+    public int hashCode() {
+        synchronized (bytes) {
+            synchronized (bytes10) {
+                return Objects.hash(new LinkedList<>(bytes), new LinkedList<>(bytes10));
+            }
+        }
+    }
+
+
 
 }

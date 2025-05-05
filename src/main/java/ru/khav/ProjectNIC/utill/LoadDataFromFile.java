@@ -15,25 +15,26 @@ public class LoadDataFromFile implements DownloadDataFromFile {
     private final DataFromFile curDataFromFile = new DataFromFile();
     private File file;
 
-    private static final int PAGE_SIZE = 128 * 1024 * 1024; // 128 мб
+    private static final int PAGE_SIZE = 200; // 200,
     private long position = 0;
     private long curFileSize;
 
     @Override
-    public DataFromFile getDataByteFromFile() throws IOException {
+    public  DataFromFile getDataByteFromFile() throws IOException {
         position = 0;
         return readPageAt(position);
     }
 
-    public DataFromFile getNextDataFromFile() throws IOException {
+    @Override
+    public  DataFromFile getNextDataFromFile() throws IOException {
         if (position + PAGE_SIZE >= curFileSize) {
             return curDataFromFile; //последняя стр
         }
         position += PAGE_SIZE;
         return readPageAt(position);
     }
-
-    public DataFromFile getPreviousDataFromFile() throws IOException {
+    @Override
+    public  DataFromFile getPreviousDataFromFile() throws IOException {
         if (position == 0) {
             return curDataFromFile;//первая стр
         }
@@ -41,7 +42,7 @@ public class LoadDataFromFile implements DownloadDataFromFile {
         return readPageAt(position);
     }
 
-    private DataFromFile readPageAt(long startPos) throws IOException {
+    private synchronized DataFromFile readPageAt(long startPos) throws IOException {
         curDataFromFile.getBytes().clear();
         curDataFromFile.getBytes10().clear();
 
@@ -57,6 +58,9 @@ public class LoadDataFromFile implements DownloadDataFromFile {
                 curDataFromFile.getBytes().add(b);
                 curDataFromFile.getBytes10().add(b & 0xFF);
             }
+        }catch (Exception e)
+        {
+            System.out.println(e.getMessage());
         }
 
         return curDataFromFile;
@@ -67,15 +71,23 @@ public class LoadDataFromFile implements DownloadDataFromFile {
         try (RandomAccessFile raf = new RandomAccessFile(file, "rw");
              FileChannel ch = raf.getChannel()) {
 
+            int dataSize = data.getBytes().size();
+            long requiredSize = position + dataSize;
+
+            if (raf.length() < requiredSize) {
+                raf.setLength(requiredSize);
+            }
+
             long mapSize = Math.max(PAGE_SIZE, data.getBytes().size());
             MappedByteBuffer out = ch.map(FileChannel.MapMode.READ_WRITE, position, mapSize);
 
             for (byte b : data.getBytes()) {
                 out.put(b);
             }
+            out.force();//сбрасываем изменение на диск
         }
     }
-    public void clear()
+    public  void clear()
     {
         curDataFromFile.clear();
     }

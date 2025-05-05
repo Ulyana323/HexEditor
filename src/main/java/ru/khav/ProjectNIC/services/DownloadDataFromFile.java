@@ -8,4 +8,6 @@ public interface DownloadDataFromFile {
     DataFromFile getDataByteFromFile() throws IOException;
     void updateDataInFile(DataFromFile data) throws IOException;
    boolean isLastPage();
+    DataFromFile getNextDataFromFile() throws IOException;
+    DataFromFile getPreviousDataFromFile() throws IOException;
 }
