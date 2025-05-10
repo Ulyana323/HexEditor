@@ -1,35 +1,39 @@
 package ru.khav.ProjectNIC;
 
 import lombok.Data;
+import ru.khav.ProjectNIC.Controllers.SearchSeq;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.models.MeanTableModel;
-import ru.khav.ProjectNIC.services.DownloadDataFromFile;
-import ru.khav.ProjectNIC.services.SimpleAction;
+import ru.khav.ProjectNIC.Controllers.DownloadDataFromFile;
+import ru.khav.ProjectNIC.Controllers.SimpleAction;
 import ru.khav.ProjectNIC.utill.LoadDataFromFile;
 import ru.khav.ProjectNIC.views.AddressTable;
 import ru.khav.ProjectNIC.views.MeanByteTable;
 import ru.khav.ProjectNIC.views.TableData;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Data
 public class MainWindow extends JFrame {
     private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
     private static int countByte = 10;
     private static int address = 10;
+    private List<List<Integer>> highlightRanges = new ArrayList<>();
 
     public static int getCountBytee() {
         return countByte;
@@ -63,6 +67,8 @@ public class MainWindow extends JFrame {
 
     TableData tableData;
     AddressTable addressTable;
+    JFormattedTextField searchSeq;
+
     JTable meanByteTable;
     List<Object> buffer = new ArrayList<>();
 
@@ -78,7 +84,7 @@ public class MainWindow extends JFrame {
 
     public MainWindow() {
         logger.info("Mainwinow()");
-        setSize(4000, 1000);
+        setSize(4000, 2000);
         setResizable(false);
         setTitle("trying...");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -116,7 +122,7 @@ public class MainWindow extends JFrame {
         container.setBackground(Color.black);
     }
 
-    public void dataload(String path) throws IOException {
+    public void dataload(String path) throws IOException, ParseException {
         logger.info("dataload()");
         ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
         DataFromFile curData = downloadDataFromFile.getDataByteFromFile();
@@ -157,7 +163,7 @@ public class MainWindow extends JFrame {
 
     }
 
-    public void createDynamicTable(List<String> dataToView, int colls, int rows) throws IOException {
+    public void createDynamicTable(List<String> dataToView, int colls, int rows) throws IOException, ParseException {
         logger.info("createDynamicTable()");
         Vector<Vector<String>> myData = new Vector<>();
         Vector<Vector<String>> addresses = new Vector<>();
@@ -205,6 +211,7 @@ public class MainWindow extends JFrame {
         showDecMeanConfig();
         // Добавляем на главный контейнер панели
         JPanel editor = new JPanel(new BorderLayout());
+        editor.add(configNorthPanel(),BorderLayout.NORTH);
         editor.add(configCenterPanel(), BorderLayout.CENTER);
         editor.add(configSouthPanel(), BorderLayout.SOUTH);
         secondPanel.add(editor);
@@ -259,7 +266,35 @@ public class MainWindow extends JFrame {
         tableData.repaint();
     }
 
+    public JPanel configNorthPanel() throws ParseException {
+        JPanel northPanel = new JPanel(new BorderLayout());
+        try {
+            MaskFormatter m = new MaskFormatter("HH-HH-HH");
+            m.setPlaceholderCharacter('0');
 
+            searchSeq = new JFormattedTextField(m);
+            searchSeq.setColumns(16);
+
+            JButton toSearch = new JButton("search");
+            toSearch.setName("tosearch");
+            toSearch.addActionListener(new SearchSeq(this));
+
+            JButton toDelColor = new JButton("delete hightlights");
+            toDelColor.setName("delcolor");
+            toDelColor.addActionListener(new SearchSeq(this));
+
+
+            JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            searchPanel.add(searchSeq);
+            searchPanel.add(toSearch);
+            searchPanel.add(toDelColor);
+
+            northPanel.add(searchPanel, BorderLayout.WEST);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return northPanel;
+    }
     public JPanel configCenterPanel() {
         logger.info("configCenterPanel()");
         for (int i = 0; i < tableData.getColumnCount(); i++) {
@@ -421,8 +456,9 @@ public class MainWindow extends JFrame {
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
             if (curPos >= currentByteData.size()) {//todo проверить
-                if(downloadDataFromFile.isLastPage()){
-                wideCurData(hexString, curPos);}
+                if (downloadDataFromFile.isLastPage()) {
+                    wideCurData(hexString, curPos);
+                }
             } else {
                 updateCurData(hexString, curPos);
             }
@@ -515,7 +551,7 @@ public class MainWindow extends JFrame {
                 String value;
                 for (int col : selectedCols) {
                     if (it >= buffer.size()) break;
-                    if(!downloadDataFromFile.isLastPage()) break;
+                    if (!downloadDataFromFile.isLastPage()) break;
                     value = (String) buffer.get(it);
                     tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
@@ -538,14 +574,14 @@ public class MainWindow extends JFrame {
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlX, "addXFromBuff");
         tableData.getActionMap().put("addXFromBuff", new AbstractAction() {
             @Override//вставка блока элементов с помощью ctrlX
-            public void actionPerformed(ActionEvent e) {//todo баги исправить
+            public void actionPerformed(ActionEvent e) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
-                int posFromCopy=selectedRow*countByte+selectedCols[0];
-                int posToInsert=selectedRow*countByte+selectedCols[selectedCols.length-1]+1;
-                List<Byte> toInsByte=new ArrayList<>(currentByteData.subList(posFromCopy,currentByteData.size()-1));
-                List<Integer> toInsInt=new ArrayList<>(currentIntData.subList(posFromCopy,currentIntData.size()-1));
-                List<String> toInsStr=new ArrayList<>(currentStrData.subList(posFromCopy,currentStrData.size()-1));
+                int posFromCopy = selectedRow * countByte + selectedCols[0];
+                int posToInsert = selectedRow * countByte + selectedCols[selectedCols.length - 1] + 1;
+                List<Byte> toInsByte = new ArrayList<>(currentByteData.subList(posFromCopy, currentByteData.size() - 1));
+                List<Integer> toInsInt = new ArrayList<>(currentIntData.subList(posFromCopy, currentIntData.size() - 1));
+                List<String> toInsStr = new ArrayList<>(currentStrData.subList(posFromCopy, currentStrData.size() - 1));
                 int it = 0;
                 String value;
                 wideCurDataWithoutChange(selectedCols.length);
@@ -556,13 +592,14 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        if(downloadDataFromFile.isLastPage()){//todo check!
-                        wideCurData(value, curPos);}
+                        if (downloadDataFromFile.isLastPage()) {//todo check!
+                            wideCurData(value, curPos);
+                        }
                     } else {
                         updateCurData(value, curPos);
                     }
                 }
-                updateBalanceCurDataWider(toInsByte,toInsInt,toInsStr,posToInsert);
+                updateBalanceCurDataWider(toInsByte, toInsInt, toInsStr, posToInsert);
 
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
@@ -578,6 +615,37 @@ public class MainWindow extends JFrame {
         logger.info("configTables()");
         //тут данные с файла
         tableData = new TableData(fileDataTableModel);
+        tableData.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                boolean highlightFound = false;
+                if (!highlightRanges.isEmpty()) {
+                    for (List<Integer> range : highlightRanges) {
+                        int sr = range.get(0), sc = range.get(1), er = range.get(2), ec = range.get(3);
+
+                        // Проверяем, попадает ли текущая ячейка в диапазон
+                        if (row >= sr && row <= er && column >= sc && column <= ec) {
+                            c.setBackground(Color.CYAN);
+                            c.setForeground(Color.BLACK);
+                            highlightFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Если нет выделения, восстанавливаем обычные цвета
+                if (!highlightFound) {
+                    c.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+                    c.setForeground(isSelected ? table.getSelectionForeground() : Color.BLACK);
+                }
+
+                return c;
+            }
+        });
         editDataConfig();
         //тут адреса
         addressTable = new AddressTable(tableAddressModel);
@@ -609,18 +677,37 @@ public class MainWindow extends JFrame {
 
         }
     }
+
     public void wideCurDataWithoutChange(int size) {
         for (int i = 0; i <= size; i++) {
             currentByteData.add((byte) 0);
             currentIntData.add(0);
         }
     }
-    public void updateBalanceCurDataWider(List<Byte> tmp,List<Integer> tm,List<String> t,int indexFrom) {
-    currentByteData.addAll(indexFrom,tmp);
-    currentIntData.addAll(indexFrom,tm);
-    currentStrData.addAll(indexFrom,t);
-    changeScaleDataTable(currentStrData,countByte,address);
+
+    public void updateBalanceCurDataWider(List<Byte> tmp, List<Integer> tm, List<String> t, int indexFrom) {
+        currentByteData.addAll(indexFrom, tmp);
+        currentIntData.addAll(indexFrom, tm);
+        currentStrData.addAll(indexFrom, t);
+        changeScaleDataTable(currentStrData, countByte, address);
     }
+
+    public void addHighlightRange(int sr, int sc, int er, int ec) {
+        highlightRanges.add(Arrays.asList(sr, sc, er, ec));
+    }
+
+    public void clearHighlightRanges() {
+        highlightRanges.clear();
+        tableData.repaint();
+    }
+
+    public List<List<Integer>> getHighlightRanges() {
+        return highlightRanges;
+    }
+
+
+
+
 
     public static void main(String[] args) {
 

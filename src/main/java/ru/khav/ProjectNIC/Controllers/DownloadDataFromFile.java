@@ -1,4 +1,4 @@
-package ru.khav.ProjectNIC.services;
+package ru.khav.ProjectNIC.Controllers;
 
 import ru.khav.ProjectNIC.models.DataFromFile;
 

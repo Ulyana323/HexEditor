@@ -2,7 +2,7 @@ package ru.khav.ProjectNIC.utill;
 
 import lombok.Data;
 import ru.khav.ProjectNIC.models.DataFromFile;
-import ru.khav.ProjectNIC.services.DownloadDataFromFile;
+import ru.khav.ProjectNIC.Controllers.DownloadDataFromFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +79,8 @@ public class LoadDataFromFile implements DownloadDataFromFile {
     {
         curDataFromFile.clear();
     }
+
+
     @Override
     public boolean isLastPage()
     {
