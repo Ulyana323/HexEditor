@@ -6,26 +6,19 @@ import java.awt.*;
 
 public class TableData extends JTable {
 
-    public TableData(TableModel tableModel)
-    {
+    public TableData(TableModel tableModel) {
         super(tableModel);
         getTableHeader().setResizingAllowed(false);
         getTableHeader().setReorderingAllowed(false);
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setCellSelectionEnabled(true);
-       getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setSelectionBackground(Color.YELLOW);
-
-
     }
 
     @Override
     public TableModel getModel() {
         return super.getModel();
-    }
-    public void addListener()
-    {
-
     }
 
     public void scrollTable(int direction) {
@@ -37,7 +30,7 @@ public class TableData extends JTable {
             changeSelection(0, newColumnIndex, false, false);
         } else { //l
             int newColumnIndex = Math.max(getSelectedColumn() - currentViewableColumns, 0);
-           scrollRectToVisible(getCellRect(0, newColumnIndex, true));
+            scrollRectToVisible(getCellRect(0, newColumnIndex, true));
             changeSelection(0, newColumnIndex, false, false);
         }
     }

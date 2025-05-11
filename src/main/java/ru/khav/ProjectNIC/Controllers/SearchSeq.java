@@ -1,5 +1,7 @@
 package ru.khav.ProjectNIC.Controllers;
+
 import ru.khav.ProjectNIC.MainWindow;
+import ru.khav.ProjectNIC.utill.ButNames;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -23,10 +25,10 @@ public class SearchSeq extends AbstractAction {
         JButton btn = (JButton) e.getSource();
         System.out.println("Нажатие на кнопку <" + btn.getName() + ">");
 
-        if (btn.getName().equalsIgnoreCase("tosearch")) {
+        if (btn.getName().equalsIgnoreCase(ButNames.Search.name())) {
             List<String> data = mainWindow.getCurrentStrData();
             String seq = mainWindow.getSearchSeq().getText();
-            int cols = mainWindow.getCountBytee();
+            int cols = MainWindow.getCountBytee();
 
             String[] pattern = seq.split("-");
             int processors = Runtime.getRuntime().availableProcessors();//сколько потоков мы можем создать
@@ -46,7 +48,7 @@ public class SearchSeq extends AbstractAction {
                                 data.get(j + 1).equals(pattern[1]) &&
                                 data.get(j + 2).equals(pattern[2])) {
 
-                            int sr = j / cols, sc = j % cols;
+                            int sr = j / cols, sc = j % cols;//sr/c - start row/col er/c - end row/col
                             int er = (j + 2) / cols, ec = (j + 2) % cols;
                             result.add(Arrays.asList(sr, sc, er, ec));
                         }
@@ -64,8 +66,8 @@ public class SearchSeq extends AbstractAction {
                         if (!part.isEmpty()) {
                             SwingUtilities.invokeLater(() -> {
                                 mainWindow.clearHighlightRanges();//убираем старые выделенные
-                               for (List<Integer> r : part) {
-                                    mainWindow.addHighlightRange(part.get(0).get(0), part.get(0).get(1), part.get(0).get(2), part.get(0).get(3));
+                                for (List<Integer> r : part) {
+                                    mainWindow.addHighlightRange(r.get(0), r.get(1), r.get(2), r.get(3));
                                 }
                                 mainWindow.getTableData().repaint();
                             });
@@ -78,39 +80,8 @@ public class SearchSeq extends AbstractAction {
                 executor.shutdown();
             }).start();
         }
-           /* try {
-                int sc,sr,ec,er;
-                List cur = mainWindow.getCurrentStrData();
-                String[] seq = mainWindow.getSearchSeq().getText().split("-");
-                for (int i = 0; i < cur.size()+2; i++) {
-                    if (cur.get(i).equals(seq[0]))
-                    {
-                        //начальные и конечные ряд и столбец диапазона выделения
-                        sr=i/mainWindow.getCountBytee();
-                        sc=i%mainWindow.getCountBytee();
-                        er=(i+2)/mainWindow.getCountBytee();
-                        ec=(i+2)%mainWindow.getCountBytee();
-                        if (cur.get(i+1).equals(seq[1]))
-                        {
-                            if (cur.get(i+2).equals(seq[2]))
-                            {
-                                System.out.println("YES");
-                                mainWindow.setStartCol(sc);
-                                mainWindow.setEndCol(ec);
-                                mainWindow.setStartRow(sr);
-                                mainWindow.setEndRow(er);
-                                mainWindow.getTableData().repaint();
-                                break;
-                            }
-                        }
-                    }
-                }
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-*/
-        if (btn.getName().equalsIgnoreCase("delcolor")) {
+        if (btn.getName().equalsIgnoreCase(ButNames.DelHighlights.name())) {
             mainWindow.clearHighlightRanges();
         }
     }

@@ -1,52 +1,24 @@
 package ru.khav.ProjectNIC.Controllers;
 
+import lombok.AllArgsConstructor;
 import ru.khav.ProjectNIC.MainWindow;
 import ru.khav.ProjectNIC.models.MeanTableModel;
-import ru.khav.ProjectNIC.utill.LoadDataFromFile;
+import ru.khav.ProjectNIC.utill.ButNames;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.awt.event.ActionEvent;
-
+import java.io.IOException;
+import java.text.ParseException;
+@AllArgsConstructor
 public class SimpleAction extends AbstractAction {
 
     MainWindow mainWindow;
 
-    public SimpleAction(MainWindow mainWindow) {
-        this.mainWindow = mainWindow;
-    }
-
-    private static final long serialVersionUID = 1L;
-
-    // Обработка события нажатия на кнопку
     public void actionPerformed(ActionEvent e) {
         JButton btn = (JButton) e.getSource();
         System.out.println("Нажатие на кнопку <" + btn.getName() + ">");
-
-        if (btn.getName().equalsIgnoreCase("addrow")) {
-            mainWindow.getFileDataTableModel().addRow(new Object[]{mainWindow.upAddress()});
-            mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
-        }
-        if (btn.getName().equalsIgnoreCase("addcol")) {
-            mainWindow.getFileDataTableModel().addColumn(mainWindow.upCountByte());
-            mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
-        }
-        if (btn.getName().equalsIgnoreCase("delrow")) {
-            if (mainWindow.getFileDataTableModel().getRowCount() > 0) {
-                mainWindow.getFileDataTableModel().removeRow(mainWindow.getAddresss() - 2);
-                mainWindow.downAddress();
-                mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
-            }
-        }
-        if (btn.getName().equalsIgnoreCase("delcol")) {
-            if (mainWindow.getFileDataTableModel().getColumnCount() > 1) {
-                mainWindow.getFileDataTableModel().setColumnCount(mainWindow.getCountBytee() - 1);
-                mainWindow.downCountByte();
-                mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), mainWindow.getCountBytee(), mainWindow.getAddresss());
-            }
-        }
-        if (btn.getName().equalsIgnoreCase("exitBut")) {
+        if (btn.getName().equalsIgnoreCase(ButNames.Exit.name())) {
             CardLayout cl = (CardLayout) (mainWindow.getMainPanel().getLayout());
             cl.show(mainWindow.getMainPanel(), "first");
             mainWindow.getCurrentByteData().clear();
@@ -56,17 +28,15 @@ public class SimpleAction extends AbstractAction {
             mainWindow.getFileDataTableModel().setColumnCount(0);
             MeanTableModel m = (MeanTableModel) mainWindow.getMeanByteTable().getModel();
             m.clear();
-            LoadDataFromFile l = (LoadDataFromFile) mainWindow.getDownloadDataFromFile();
-            l.clear();
             mainWindow.getSecondPanel().removeAll();
         }
-        if (btn.getName().equalsIgnoreCase("openBut")) {
+        if (btn.getName().equalsIgnoreCase(ButNames.Open.name())) {
             CardLayout cl = (CardLayout) (mainWindow.getMainPanel().getLayout());
             mainWindow.getSecondPanel().revalidate();
             mainWindow.getSecondPanel().repaint();
             cl.show(mainWindow.getMainPanel(), "second");
         }
-        if (btn.getName().equalsIgnoreCase("File")) {
+        if (btn.getName().equalsIgnoreCase(ButNames.File.name())) {
             mainWindow.getFileChooser().setDialogTitle("Выбор директории");
             //только каталог
             mainWindow.getFileChooser().setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -74,7 +44,6 @@ public class SimpleAction extends AbstractAction {
             // Если директория выбрана, покажем ее в сообщении
             if (result == JFileChooser.APPROVE_OPTION) {
                 System.out.println(mainWindow.getFileChooser().getSelectedFile().getPath());
-                //createDynamicTable(array, countByte, address);}
 
                 try {
                     mainWindow.dataload(mainWindow.getFileChooser().getSelectedFile().getPath());
@@ -83,42 +52,5 @@ public class SimpleAction extends AbstractAction {
                 }
             }
         }
-    /*    if (btn.getName().equalsIgnoreCase("tosearch")) {
-            try {
-                int sc,sr,ec,er;
-                List cur = mainWindow.getCurrentStrData();
-                String[] seq = mainWindow.getSearchSeq().getText().split("-");
-                for (int i = 0; i < cur.size()+2; i++) {
-                    if (cur.get(i).equals(seq[0]))
-                    {
-                        //начальные и конечные ряд и столбец диапазона выделения
-                        sr=i/mainWindow.getCountBytee();
-                        sc=i%mainWindow.getCountBytee();
-                        er=(i+2)/mainWindow.getCountBytee();
-                        ec=(i+2)%mainWindow.getCountBytee();
-                        if (cur.get(i+1).equals(seq[1]))
-                        {
-                            if (cur.get(i+2).equals(seq[2]))
-                            {
-                              System.out.println("YES");
-                              mainWindow.setStartCol(sc);
-                              mainWindow.setEndCol(ec);
-                              mainWindow.setStartRow(sr);
-                              mainWindow.setEndRow(er);
-                              mainWindow.getTableData().repaint();
-                              break;
-                            }
-                        }
-                    }
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-        }
-        if (btn.getName().equalsIgnoreCase("delcolor")) {
-            mainWindow.delHightLightsAfterSearch();
-        }*/
     }
 }

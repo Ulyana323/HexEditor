@@ -1,21 +1,21 @@
-package ru.khav.ProjectNIC.utill;
+package ru.khav.ProjectNIC.Controllers;
 
 import lombok.Data;
 import ru.khav.ProjectNIC.models.DataFromFile;
-import ru.khav.ProjectNIC.Controllers.DownloadDataFromFile;
+import ru.khav.ProjectNIC.utill.DownloadDataFromFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class LoadDataFromFile implements DownloadDataFromFile {
-    private final DataFromFile curDataFromFile = new DataFromFile();
+    private static final int PAGE_SIZE = 10 * 1024; // 10кб
     private File file;
-
-    private static final int PAGE_SIZE = 128 * 1024 * 1024; // 128 мб
     private long position = 0;
     private long curFileSize;
 
@@ -27,7 +27,7 @@ public class LoadDataFromFile implements DownloadDataFromFile {
 
     public DataFromFile getNextDataFromFile() throws IOException {
         if (position + PAGE_SIZE >= curFileSize) {
-            return curDataFromFile; //последняя стр
+            return readPageAt(position); //последняя стр
         }
         position += PAGE_SIZE;
         return readPageAt(position);
@@ -35,15 +35,15 @@ public class LoadDataFromFile implements DownloadDataFromFile {
 
     public DataFromFile getPreviousDataFromFile() throws IOException {
         if (position == 0) {
-            return curDataFromFile;//первая стр
+            return readPageAt(position); //первая стр
         }
         position = Math.max(0, position - PAGE_SIZE);
         return readPageAt(position);
     }
 
     private DataFromFile readPageAt(long startPos) throws IOException {
-        curDataFromFile.getBytes().clear();
-        curDataFromFile.getBytes10().clear();
+        List<Byte> bytes = new ArrayList<>();
+        List<Integer> bytes10 = new ArrayList<>();
 
         try (RandomAccessFile raf = new RandomAccessFile(file, "r");
              FileChannel ch = raf.getChannel()) {
@@ -54,12 +54,12 @@ public class LoadDataFromFile implements DownloadDataFromFile {
 
             while (in.hasRemaining()) {
                 byte b = in.get();
-                curDataFromFile.getBytes().add(b);
-                curDataFromFile.getBytes10().add(b & 0xFF);
+                bytes.add(b);
+                bytes10.add(b & 0xFF);
             }
         }
 
-        return curDataFromFile;
+        return new DataFromFile(bytes, bytes10);
     }
 
     @Override
@@ -75,15 +75,9 @@ public class LoadDataFromFile implements DownloadDataFromFile {
             }
         }
     }
-    public void clear()
-    {
-        curDataFromFile.clear();
-    }
-
 
     @Override
-    public boolean isLastPage()
-    {
+    public boolean isLastPage() {
         return position + PAGE_SIZE >= curFileSize;
     }
 

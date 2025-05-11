@@ -1,12 +1,14 @@
 package ru.khav.ProjectNIC;
 
 import lombok.Data;
+import ru.khav.ProjectNIC.Controllers.ChangeTableScale;
 import ru.khav.ProjectNIC.Controllers.SearchSeq;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.models.MeanTableModel;
-import ru.khav.ProjectNIC.Controllers.DownloadDataFromFile;
+import ru.khav.ProjectNIC.utill.ButNames;
+import ru.khav.ProjectNIC.utill.DownloadDataFromFile;
 import ru.khav.ProjectNIC.Controllers.SimpleAction;
-import ru.khav.ProjectNIC.utill.LoadDataFromFile;
+import ru.khav.ProjectNIC.Controllers.LoadDataFromFile;
 import ru.khav.ProjectNIC.views.AddressTable;
 import ru.khav.ProjectNIC.views.MeanByteTable;
 import ru.khav.ProjectNIC.views.TableData;
@@ -105,8 +107,8 @@ public class MainWindow extends JFrame {
         firstPanel.setBackground(Color.CYAN);
         JButton jButton = new JButton("File");
         JButton openBut = new JButton("Open it");
-        openBut.setName("openBut");
-        jButton.setName("File");
+        openBut.setName(ButNames.Open.name());
+        jButton.setName(ButNames.File.name());
         firstPanel.add(openBut);
         firstPanel.add(jButton);
         jButton.addActionListener(new SimpleAction(this));
@@ -139,6 +141,37 @@ public class MainWindow extends JFrame {
         revalidate();
         repaint();
     }
+
+    public void dataload2() throws IOException, ParseException{
+        logger.info("dataload2()");
+        DataFromFile curData = downloadDataFromFile.getNextDataFromFile();
+        currentByteData = curData.getBytes();
+        currentIntData = curData.getBytes10();
+        currentStrData = curData.getHexFormatOfData();
+        while (currentByteData.size() < countByte * address) {
+            countByte--;
+            address--;
+        }
+        changeScaleDataTable(currentStrData,countByte,address);
+        revalidate();
+        repaint();
+    }
+    public void dataload3() throws IOException, ParseException{
+        logger.info("dataload2()");
+        DataFromFile curData = downloadDataFromFile.getPreviousDataFromFile();
+        currentByteData = curData.getBytes();
+        currentIntData = curData.getBytes10();
+        currentStrData = curData.getHexFormatOfData();
+        while (currentByteData.size() < countByte * address) {
+            countByte--;
+            address--;
+        }
+     //   createDynamicTable(currentStrData, countByte, address);
+        changeScaleDataTable(currentStrData,countByte,address);
+        revalidate();
+        repaint();
+    }
+
 
     public void createMenu() {
         JMenuBar jMenuBar = new JMenuBar();
@@ -276,11 +309,11 @@ public class MainWindow extends JFrame {
             searchSeq.setColumns(16);
 
             JButton toSearch = new JButton("search");
-            toSearch.setName("tosearch");
+            toSearch.setName(ButNames.Search.name());
             toSearch.addActionListener(new SearchSeq(this));
 
             JButton toDelColor = new JButton("delete hightlights");
-            toDelColor.setName("delcolor");
+            toDelColor.setName(ButNames.DelHighlights.name());
             toDelColor.addActionListener(new SearchSeq(this));
 
 
@@ -334,36 +367,36 @@ public class MainWindow extends JFrame {
         JPanel tableButtonPanel = new JPanel(new GridLayout(2, 4, 5, 5));
 
         JButton addRowButton = new JButton("add row");
-        addRowButton.setName("addrow");
+        addRowButton.setName(ButNames.AddRow.name());
         addRowButton.setToolTipText("Добавить строку");
-        addRowButton.addActionListener(new SimpleAction(this));
+        addRowButton.addActionListener(new ChangeTableScale(this));
 
         JButton addColumnButton = new JButton("add column");
-        addColumnButton.setName("addcol");
+        addColumnButton.setName(ButNames.AddColumn.name());
         addColumnButton.setToolTipText("Добавить столбец");
-        addColumnButton.addActionListener(new SimpleAction(this));
+        addColumnButton.addActionListener(new ChangeTableScale(this));
 
         JButton delRowButton = new JButton("del row");
-        delRowButton.setName("delrow");
+        delRowButton.setName(ButNames.DelRow.name());
         delRowButton.setToolTipText("Удалить строку");
-        delRowButton.addActionListener(new SimpleAction(this));
+        delRowButton.addActionListener(new ChangeTableScale(this));
 
         JButton delColumnButton = new JButton("del column");
-        delColumnButton.setName("delcol");
+        delColumnButton.setName(ButNames.DelColumn.name());
         delColumnButton.setToolTipText("Удалить столбец");
-        delColumnButton.addActionListener(new SimpleAction(this));
+        delColumnButton.addActionListener(new ChangeTableScale(this));
 
         JButton exitBut = new JButton("Exit");
-        exitBut.setName("exitBut");
+        exitBut.setName(ButNames.Exit.name());
         exitBut.addActionListener(new SimpleAction(this));
 
         JButton up = new JButton("upPage");
-        up.setName("upPage");
-        up.addActionListener(new SimpleAction(this));
+        up.setName(ButNames.UpPage.name());
+        up.addActionListener(new ChangeTableScale(this));
 
         JButton down = new JButton("downPage");
-        down.setName("downPage");
-        down.addActionListener(new SimpleAction(this));
+        down.setName(ButNames.DownPage.name());
+        down.addActionListener(new ChangeTableScale(this));
 
 
         tableButtonPanel.add(addRowButton);
@@ -619,7 +652,6 @@ public class MainWindow extends JFrame {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
-
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 boolean highlightFound = false;
@@ -627,7 +659,7 @@ public class MainWindow extends JFrame {
                     for (List<Integer> range : highlightRanges) {
                         int sr = range.get(0), sc = range.get(1), er = range.get(2), ec = range.get(3);
 
-                        // Проверяем, попадает ли текущая ячейка в диапазон
+                        //попадает ли текущая ячейка в диапазон
                         if (row >= sr && row <= er && column >= sc && column <= ec) {
                             c.setBackground(Color.CYAN);
                             c.setForeground(Color.BLACK);
@@ -704,10 +736,6 @@ public class MainWindow extends JFrame {
     public List<List<Integer>> getHighlightRanges() {
         return highlightRanges;
     }
-
-
-
-
 
     public static void main(String[] args) {
 

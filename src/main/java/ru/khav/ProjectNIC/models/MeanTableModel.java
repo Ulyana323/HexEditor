@@ -37,7 +37,6 @@ public class MeanTableModel extends AbstractTableModel {
         }
     }
 
-
     @Override
     public int getRowCount() {
         return 8;

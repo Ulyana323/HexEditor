@@ -7,11 +7,12 @@ public class MeanByteTable extends JTable {
 
     public MeanByteTable(TableModel tm) {
         super(tm);
-       getTableHeader().setResizingAllowed(false);
-       revalidate();
-       repaint();
+        getTableHeader().setResizingAllowed(false);
+        revalidate();
+        repaint();
 
     }
+
     @Override
     public TableModel getModel() {
         return super.getModel();

@@ -11,6 +11,7 @@ public class AddressTable extends JTable {
         getColumnModel().setColumnSelectionAllowed(false);
 
     }
+
     @Override
     public TableModel getModel() {
         return super.getModel();
