@@ -88,7 +88,7 @@ public class MainWindow extends JFrame {
         logger.info("Mainwinow()");
         setSize(4000, 2000);
         setResizable(false);
-        setTitle("trying...");
+        setTitle("Ulyana's HexEditor");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(500, 600));
         setLocation(200, 100); // Устанавливаем позицию окна
@@ -584,14 +584,15 @@ public class MainWindow extends JFrame {
                 String value;
                 for (int col : selectedCols) {
                     if (it >= buffer.size()) break;
-                    if (!downloadDataFromFile.isLastPage()) break;
                     value = (String) buffer.get(it);
-                    tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        wideCurData(value, curPos);
-                    } else {
+                        if (!downloadDataFromFile.isLastPage()){
+                            break;}
+                        wideCurData(value, curPos);}
+                    else {
+                        tableData.getModel().setValueAt(value, selectedRow, col);
                         updateCurData(value, curPos);
                     }
                 }

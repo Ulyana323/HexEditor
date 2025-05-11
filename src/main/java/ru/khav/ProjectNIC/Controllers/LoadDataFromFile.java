@@ -67,7 +67,7 @@ public class LoadDataFromFile implements DownloadDataFromFile {
         try (RandomAccessFile raf = new RandomAccessFile(file, "rw");
              FileChannel ch = raf.getChannel()) {
 
-            long mapSize = Math.max(PAGE_SIZE, data.getBytes().size());
+            long mapSize = Math.min(PAGE_SIZE, data.getBytes().size());
             MappedByteBuffer out = ch.map(FileChannel.MapMode.READ_WRITE, position, mapSize);
 
             for (byte b : data.getBytes()) {

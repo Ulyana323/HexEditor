@@ -8,8 +8,7 @@ import ru.khav.ProjectNIC.utill.ButNames;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.text.ParseException;
+
 @AllArgsConstructor
 public class SimpleAction extends AbstractAction {
 
