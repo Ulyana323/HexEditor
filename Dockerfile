@@ -13,8 +13,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mvn clean package
-
 WORKDIR /app
 
 COPY target/HexEditorGUI-1.0-SNAPSHOT.jar app.jar

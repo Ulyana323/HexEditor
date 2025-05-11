@@ -17,10 +17,6 @@ sudo apt-get update
 #установка Docker
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-#установка maven
-sudo apt update
-sudo apt install maven
-
 #xhost +SI:localuser:$(whoami)
 
 #cборка образа
