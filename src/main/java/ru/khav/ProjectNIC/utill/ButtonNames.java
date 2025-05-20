@@ -1,6 +1,6 @@
 package ru.khav.ProjectNIC.utill;
 
-public enum ButNames {
+public enum ButtonNames {
     AddColumn,
     DelColumn,
     AddRow,

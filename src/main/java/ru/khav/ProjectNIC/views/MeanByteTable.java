@@ -13,8 +13,4 @@ public class MeanByteTable extends JTable {
 
     }
 
-    @Override
-    public TableModel getModel() {
-        return super.getModel();
-    }
 }

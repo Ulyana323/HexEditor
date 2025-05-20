@@ -2,7 +2,7 @@ package ru.khav.ProjectNIC.Controllers;
 
 import lombok.Data;
 import ru.khav.ProjectNIC.models.DataFromFile;
-import ru.khav.ProjectNIC.utill.DownloadDataFromFile;
+import ru.khav.ProjectNIC.utill.ReadDataFromFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class LoadDataFromFile implements DownloadDataFromFile {
+public class LoadDataFromFile implements ReadDataFromFile {
     private static final int PAGE_SIZE = 10 * 1024; // 10кб
     private File file;
     private  long position = 0;

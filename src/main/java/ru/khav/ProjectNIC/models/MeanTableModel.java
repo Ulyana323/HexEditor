@@ -1,10 +1,12 @@
 package ru.khav.ProjectNIC.models;
 
+import ru.khav.ProjectNIC.utill.TypesOfMeanData;
+
 import javax.swing.table.AbstractTableModel;
 
 public class MeanTableModel extends AbstractTableModel {
 
-    Object[][] meanings = new Object[8][4];
+    final Object[][]  meanings = new Object[8][4];
 
     public void clear() {
         for (int i = 0; i < meanings.length; i++) {
@@ -14,24 +16,17 @@ public class MeanTableModel extends AbstractTableModel {
         }
         fireTableDataChanged();
     }
-
-    @Override
-    public void fireTableDataChanged() {
-        super.fireTableDataChanged();
-    }
-
-
     @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0:
-                return "local address";
+                return TypesOfMeanData.LocalAddress.name();
             case 1:
-                return "Byte";
+                return TypesOfMeanData.Byte.name();
             case 2:
-                return "Signed";
+                return TypesOfMeanData.Signed.name();
             case 3:
-                return "Unsigned";
+                return TypesOfMeanData.Unsigned.name();
             default:
                 return null;
         }

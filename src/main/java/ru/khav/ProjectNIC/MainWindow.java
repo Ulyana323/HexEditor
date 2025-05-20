@@ -5,8 +5,8 @@ import ru.khav.ProjectNIC.Controllers.ChangeTableScale;
 import ru.khav.ProjectNIC.Controllers.SearchSeq;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.models.MeanTableModel;
-import ru.khav.ProjectNIC.utill.ButNames;
-import ru.khav.ProjectNIC.utill.DownloadDataFromFile;
+import ru.khav.ProjectNIC.utill.ButtonNames;
+import ru.khav.ProjectNIC.utill.ReadDataFromFile;
 import ru.khav.ProjectNIC.Controllers.SimpleAction;
 import ru.khav.ProjectNIC.Controllers.LoadDataFromFile;
 import ru.khav.ProjectNIC.views.AddressTable;
@@ -65,7 +65,7 @@ public class MainWindow extends JFrame {
     DefaultTableModel tableAddressModel;
     MeanTableModel meanTableModel = new MeanTableModel();//иначе не прорисуется
     private JFileChooser fileChooser = null;
-    DownloadDataFromFile downloadDataFromFile = new LoadDataFromFile();
+    ReadDataFromFile readDataFromFile = new LoadDataFromFile();
 
     TableData tableData;
     AddressTable addressTable;
@@ -107,8 +107,8 @@ public class MainWindow extends JFrame {
         firstPanel.setBackground(Color.CYAN);
         JButton jButton = new JButton("File");
         JButton openBut = new JButton("Open it");
-        openBut.setName(ButNames.Open.name());
-        jButton.setName(ButNames.File.name());
+        openBut.setName(ButtonNames.Open.name());
+        jButton.setName(ButtonNames.File.name());
         firstPanel.add(openBut);
         firstPanel.add(jButton);
         jButton.addActionListener(new SimpleAction(this));
@@ -126,8 +126,8 @@ public class MainWindow extends JFrame {
 
     public void dataloadInitial(String path) throws IOException, ParseException {
         logger.info("dataloadInitial()");
-        ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
-        DataFromFile curData = downloadDataFromFile.getDataByteFromFile();
+        ((LoadDataFromFile) readDataFromFile).setFile(new File(path));
+        DataFromFile curData = readDataFromFile.getDataByteFromFile();
         currentByteData = curData.getBytes();
         currentIntData = curData.getBytes10();
         currentStrData = curData.getHexFormatOfData();
@@ -144,7 +144,7 @@ public class MainWindow extends JFrame {
 
     public void dataloadWhenChangePage() throws IOException, ParseException{
         logger.info("dataloadWhenChangePage()");
-        DataFromFile curData = downloadDataFromFile.getNextDataFromFile();
+        DataFromFile curData = readDataFromFile.getNextDataFromFile();
         currentByteData = curData.getBytes();
         currentIntData = curData.getBytes10();
         currentStrData = curData.getHexFormatOfData();
@@ -158,7 +158,7 @@ public class MainWindow extends JFrame {
     }
     public void dataload3() throws IOException, ParseException{
         logger.info("dataload2()");
-        DataFromFile curData = downloadDataFromFile.getPreviousDataFromFile();
+        DataFromFile curData = readDataFromFile.getPreviousDataFromFile();
         currentByteData = curData.getBytes();
         currentIntData = curData.getBytes10();
         currentStrData = curData.getHexFormatOfData();
@@ -309,11 +309,11 @@ public class MainWindow extends JFrame {
             searchSeq.setColumns(16);
 
             JButton toSearch = new JButton("search");
-            toSearch.setName(ButNames.Search.name());
+            toSearch.setName(ButtonNames.Search.name());
             toSearch.addActionListener(new SearchSeq(this));
 
             JButton toDelColor = new JButton("delete hightlights");
-            toDelColor.setName(ButNames.DelHighlights.name());
+            toDelColor.setName(ButtonNames.DelHighlights.name());
             toDelColor.addActionListener(new SearchSeq(this));
 
 
@@ -367,35 +367,35 @@ public class MainWindow extends JFrame {
         JPanel tableButtonPanel = new JPanel(new GridLayout(2, 4, 5, 5));
 
         JButton addRowButton = new JButton("add row");
-        addRowButton.setName(ButNames.AddRow.name());
+        addRowButton.setName(ButtonNames.AddRow.name());
         addRowButton.setToolTipText("Добавить строку");
         addRowButton.addActionListener(new ChangeTableScale(this));
 
         JButton addColumnButton = new JButton("add column");
-        addColumnButton.setName(ButNames.AddColumn.name());
+        addColumnButton.setName(ButtonNames.AddColumn.name());
         addColumnButton.setToolTipText("Добавить столбец");
         addColumnButton.addActionListener(new ChangeTableScale(this));
 
         JButton delRowButton = new JButton("del row");
-        delRowButton.setName(ButNames.DelRow.name());
+        delRowButton.setName(ButtonNames.DelRow.name());
         delRowButton.setToolTipText("Удалить строку");
         delRowButton.addActionListener(new ChangeTableScale(this));
 
         JButton delColumnButton = new JButton("del column");
-        delColumnButton.setName(ButNames.DelColumn.name());
+        delColumnButton.setName(ButtonNames.DelColumn.name());
         delColumnButton.setToolTipText("Удалить столбец");
         delColumnButton.addActionListener(new ChangeTableScale(this));
 
         JButton exitBut = new JButton("Exit");
-        exitBut.setName(ButNames.Exit.name());
+        exitBut.setName(ButtonNames.Exit.name());
         exitBut.addActionListener(new SimpleAction(this));
 
         JButton up = new JButton("upPage");
-        up.setName(ButNames.UpPage.name());
+        up.setName(ButtonNames.UpPage.name());
         up.addActionListener(new ChangeTableScale(this));
 
         JButton down = new JButton("downPage");
-        down.setName(ButNames.DownPage.name());
+        down.setName(ButtonNames.DownPage.name());
         down.addActionListener(new ChangeTableScale(this));
 
 
@@ -489,7 +489,7 @@ public class MainWindow extends JFrame {
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
             if (curPos >= currentByteData.size()) {
-                if (downloadDataFromFile.isLastPage()) {
+                if (readDataFromFile.isLastPage()) {
                     wideCurData(hexString, curPos);
                 }
             } else {
@@ -497,7 +497,7 @@ public class MainWindow extends JFrame {
             }
             try {
                 DataFromFile data = new DataFromFile(currentByteData, currentIntData);
-                downloadDataFromFile.updateDataInFile(data);
+                readDataFromFile.updateDataInFile(data);
             } catch (IOException e) {
                 logger.severe(e.getMessage());
                 throw new RuntimeException(e);
@@ -533,7 +533,7 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        if (downloadDataFromFile.isLastPage()) {
+                        if (readDataFromFile.isLastPage()) {
                             wideCurData(value, curPos);
                         }
                     } else {
@@ -544,7 +544,7 @@ public class MainWindow extends JFrame {
 
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
-                    downloadDataFromFile.updateDataInFile(data);
+                    readDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после вставки без замены: " + ex.getMessage());
                 }
@@ -569,7 +569,7 @@ public class MainWindow extends JFrame {
                     int curPos = selectedRow * countByte + col;
                     it++;
                     if (curPos >= currentByteData.size()) {
-                        if (!downloadDataFromFile.isLastPage()){
+                        if (!readDataFromFile.isLastPage()){
                             break;}
                         wideCurData(value, curPos);}
                     else {
@@ -579,7 +579,7 @@ public class MainWindow extends JFrame {
                 }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
-                    downloadDataFromFile.updateDataInFile(data);
+                    readDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после вставки c заменой: " + ex.getMessage());
                 }
@@ -612,7 +612,7 @@ public class MainWindow extends JFrame {
                 }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
-                    downloadDataFromFile.updateDataInFile(data);
+                    readDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после вырезки: " + ex.getMessage());
                 }
@@ -700,7 +700,7 @@ public class MainWindow extends JFrame {
                 }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
-                    downloadDataFromFile.updateDataInFile(data);
+                    readDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
                     logger.severe("Ошибка при сохранении после удаления: " + ex.getMessage());
                 }

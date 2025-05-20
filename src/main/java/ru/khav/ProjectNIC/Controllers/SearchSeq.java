@@ -1,7 +1,7 @@
 package ru.khav.ProjectNIC.Controllers;
 
 import ru.khav.ProjectNIC.MainWindow;
-import ru.khav.ProjectNIC.utill.ButNames;
+import ru.khav.ProjectNIC.utill.ButtonNames;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -25,7 +25,7 @@ public class SearchSeq extends AbstractAction {
         JButton btn = (JButton) e.getSource();
         System.out.println("Нажатие на кнопку <" + btn.getName() + ">");
 
-        if (btn.getName().equalsIgnoreCase(ButNames.Search.name())) {
+        if (btn.getName().equalsIgnoreCase(ButtonNames.Search.name())) {
             List<String> data = mainWindow.getCurrentStrData();
             String seq = mainWindow.getSearchSeq().getText();
             int cols = MainWindow.getCountBytee();
@@ -81,7 +81,7 @@ public class SearchSeq extends AbstractAction {
             }).start();
         }
 
-        if (btn.getName().equalsIgnoreCase(ButNames.DelHighlights.name())) {
+        if (btn.getName().equalsIgnoreCase(ButtonNames.DelHighlights.name())) {
             mainWindow.clearHighlightRanges();
         }
     }

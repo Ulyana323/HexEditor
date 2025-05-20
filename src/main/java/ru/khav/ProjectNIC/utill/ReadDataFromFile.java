@@ -4,7 +4,7 @@ import ru.khav.ProjectNIC.models.DataFromFile;
 
 import java.io.IOException;
 
-public interface DownloadDataFromFile {
+public interface ReadDataFromFile {
     DataFromFile getDataByteFromFile() throws IOException;
 
     void updateDataInFile(DataFromFile data) throws IOException;
