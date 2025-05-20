@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 
 @Data
 public class MainWindow extends JFrame {
-    private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
+    private Logger logger = Logger.getLogger(MainWindow.class.getName());
     private static int countByte = 10;
     private static int address = 10;
     private List<List<Integer>> highlightRanges = new ArrayList<>();
@@ -503,76 +503,57 @@ public class MainWindow extends JFrame {
                 throw new RuntimeException(e);
             }
         });
+        setupDeleteAction();
+        setupCopyActionWithoutCut();
+        setupCutAction();
+        setupInsertWithChangeAction();
+        setupInsertWithoutChngection();
+    }
 
-        //удаление одиночное и блочно
-        KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
-        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(deleteKey, "deleteCells");
-        tableData.getActionMap().put("deleteCells", new AbstractAction() {
-            @Override//удаляем блоки клавишей delete
+    private void setupInsertWithoutChngection() {
+        KeyStroke ctrlX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlX, "addXFromBuff");
+        tableData.getActionMap().put("addXFromBuff", new AbstractAction() {
+            @Override//вставка блока элементов с помощью ctrlX
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
+                int posFromCopy = selectedRow * countByte + selectedCols[0];
+                int posToInsert = selectedRow * countByte + selectedCols[selectedCols.length - 1] + 1;
+                List<Byte> toInsByte = new ArrayList<>(currentByteData.subList(posFromCopy, currentByteData.size() - 1));
+                List<Integer> toInsInt = new ArrayList<>(currentIntData.subList(posFromCopy, currentIntData.size() - 1));
+                List<String> toInsStr = new ArrayList<>(currentStrData.subList(posFromCopy, currentStrData.size() - 1));
+                int it = 0;
+                String value;
+                wideCurDataWithoutChange(selectedCols.length);
                 for (int col : selectedCols) {
-                    tableData.setValueAt("0", selectedRow, col);
+                    if (it >= buffer.size()) break;
+                    value = (String) buffer.get(it);
+                    tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
-                    if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
-                        updateCurData("0", curPos);
-                    }/* else {
-                        wideCurData("0", curPos);
-                    }*/
-                }
-                try {
-                    DataFromFile data = new DataFromFile(currentByteData, currentIntData);
-                    downloadDataFromFile.updateDataInFile(data);
-                } catch (IOException ex) {
-                    logger.severe("Ошибка при сохранении после удаления: " + ex.getMessage());
-                }
-            }
-        });
-        //копирование без вырезания
-        KeyStroke ctrlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
-        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlC, "addToBuff");
-        tableData.getActionMap().put("addToBuff", new AbstractAction() {
-            @Override//копирование в буфер блока элементов с помощью ctrlс
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = tableData.getSelectedRow();
-                int[] selectedCols = tableData.getSelectedColumns();
-                buffer.clear();
-                for (int col : selectedCols) {
-                    buffer.add(tableData.getModel().getValueAt(selectedRow, col));
-                }
-            }
-        });
-        //вырезка
-        KeyStroke ctrlB = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
-        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlB, "addAllToBuff");
-        tableData.getActionMap().put("addAllToBuff", new AbstractAction() {
-            @Override//вырезка в буфер блока элементов с помощью ctrlb
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = tableData.getSelectedRow();
-                int[] selectedCols = tableData.getSelectedColumns();
-                buffer.clear();
-                for (int col : selectedCols) {
-                    int curPos = selectedRow * countByte + col;
-                    if (tableData.getModel().getValueAt(selectedRow, col) == null) {
-                        buffer.add("0");
+                    it++;
+                    if (curPos >= currentByteData.size()) {
+                        if (downloadDataFromFile.isLastPage()) {
+                            wideCurData(value, curPos);
+                        }
                     } else {
-                        buffer.add(tableData.getModel().getValueAt(selectedRow, col));
-                    }
-                    if (curPos < currentByteData.size()) {
-                        tableData.getModel().setValueAt("0", selectedRow, col);
-                        updateCurData("0", curPos);
+                        updateCurData(value, curPos);
                     }
                 }
+                updateBalanceCurDataWider(toInsByte, toInsInt, toInsStr, posToInsert);
+
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
-                    logger.severe("Ошибка при сохранении после вырезки: " + ex.getMessage());
+                    logger.severe("Ошибка при сохранении после вставки без замены: " + ex.getMessage());
                 }
-                secondPanel.revalidate();
             }
         });
+    }
+
+    private void setupInsertWithChangeAction() {
+
         KeyStroke ctrlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlV, "addFromBuff");
         tableData.getActionMap().put("addFromBuff", new AbstractAction() {
@@ -604,42 +585,54 @@ public class MainWindow extends JFrame {
                 }
             }
         });
-        KeyStroke ctrlX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
-        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlX, "addXFromBuff");
-        tableData.getActionMap().put("addXFromBuff", new AbstractAction() {
-            @Override//вставка блока элементов с помощью ctrlX
+    }
+
+    private void setupCutAction() {
+
+        //вырезка
+        KeyStroke ctrlB = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlB, "addAllToBuff");
+        tableData.getActionMap().put("addAllToBuff", new AbstractAction() {
+            @Override//вырезка в буфер блока элементов с помощью ctrlb
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = tableData.getSelectedRow();
                 int[] selectedCols = tableData.getSelectedColumns();
-                int posFromCopy = selectedRow * countByte + selectedCols[0];
-                int posToInsert = selectedRow * countByte + selectedCols[selectedCols.length - 1] + 1;
-                List<Byte> toInsByte = new ArrayList<>(currentByteData.subList(posFromCopy, currentByteData.size() - 1));
-                List<Integer> toInsInt = new ArrayList<>(currentIntData.subList(posFromCopy, currentIntData.size() - 1));
-                List<String> toInsStr = new ArrayList<>(currentStrData.subList(posFromCopy, currentStrData.size() - 1));
-                int it = 0;
-                String value;
-                wideCurDataWithoutChange(selectedCols.length);
+                buffer.clear();
                 for (int col : selectedCols) {
-                    if (it >= buffer.size()) break;
-                    value = (String) buffer.get(it);
-                    tableData.getModel().setValueAt(value, selectedRow, col);
                     int curPos = selectedRow * countByte + col;
-                    it++;
-                    if (curPos >= currentByteData.size()) {
-                        if (downloadDataFromFile.isLastPage()) {//todo check!
-                            wideCurData(value, curPos);
-                        }
+                    if (tableData.getModel().getValueAt(selectedRow, col) == null) {
+                        buffer.add("0");
                     } else {
-                        updateCurData(value, curPos);
+                        buffer.add(tableData.getModel().getValueAt(selectedRow, col));
+                    }
+                    if (curPos < currentByteData.size()) {
+                        tableData.getModel().setValueAt("0", selectedRow, col);
+                        updateCurData("0", curPos);
                     }
                 }
-                updateBalanceCurDataWider(toInsByte, toInsInt, toInsStr, posToInsert);
-
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                     downloadDataFromFile.updateDataInFile(data);
                 } catch (IOException ex) {
-                    logger.severe("Ошибка при сохранении после вставки без замены: " + ex.getMessage());
+                    logger.severe("Ошибка при сохранении после вырезки: " + ex.getMessage());
+                }
+                secondPanel.revalidate();
+            }
+        });
+    }
+
+    private void setupCopyActionWithoutCut() {
+        //копирование без вырезания
+        KeyStroke ctrlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlC, "addToBuff");
+        tableData.getActionMap().put("addToBuff", new AbstractAction() {
+            @Override//копирование в буфер блока элементов с помощью ctrlс
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
+                buffer.clear();
+                for (int col : selectedCols) {
+                    buffer.add(tableData.getModel().getValueAt(selectedRow, col));
                 }
             }
         });
@@ -684,6 +677,35 @@ public class MainWindow extends JFrame {
         addressTable = new AddressTable(tableAddressModel);
         //тут значения в другой интерпретации
         meanByteTable = new MeanByteTable(meanTableModel);
+    }
+
+    void setupDeleteAction()
+    {
+        //удаление одиночное и блочно
+        KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+        tableData.getInputMap(JComponent.WHEN_FOCUSED).put(deleteKey, "deleteCells");
+        tableData.getActionMap().put("deleteCells", new AbstractAction() {
+            @Override//удаляем блоки клавишей delete
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tableData.getSelectedRow();
+                int[] selectedCols = tableData.getSelectedColumns();
+                for (int col : selectedCols) {
+                    tableData.setValueAt("0", selectedRow, col);
+                    int curPos = selectedRow * countByte + col;
+                    if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
+                        updateCurData("0", curPos);
+                    }/* else {
+                        wideCurData("0", curPos);
+                    }*/
+                }
+                try {
+                    DataFromFile data = new DataFromFile(currentByteData, currentIntData);
+                    downloadDataFromFile.updateDataInFile(data);
+                } catch (IOException ex) {
+                    logger.severe("Ошибка при сохранении после удаления: " + ex.getMessage());
+                }
+            }
+        });
     }
 
     public void updateCurData(String hexString, int curPos) {

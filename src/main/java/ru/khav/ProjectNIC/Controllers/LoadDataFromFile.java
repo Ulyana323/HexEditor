@@ -16,7 +16,7 @@ import java.util.List;
 public class LoadDataFromFile implements DownloadDataFromFile {
     private static final int PAGE_SIZE = 10 * 1024; // 10кб
     private File file;
-    private long position = 0;
+    private  long position = 0;
     private long curFileSize;
 
     @Override

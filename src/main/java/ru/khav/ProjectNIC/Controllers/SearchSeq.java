@@ -48,7 +48,7 @@ public class SearchSeq extends AbstractAction {
                                 data.get(j + 1).equals(pattern[1]) &&
                                 data.get(j + 2).equals(pattern[2])) {
 
-                            int sr = j / cols, sc = j % cols;//sr/c - start row/col er/c - end row/col
+                            int sr = j / cols, sc = j % cols;//(sr/c - start row/col) (er/c - end row/col)
                             int er = (j + 2) / cols, ec = (j + 2) % cols;
                             result.add(Arrays.asList(sr, sc, er, ec));
                         }
