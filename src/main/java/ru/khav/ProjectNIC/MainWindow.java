@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
+import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
+
 @Data
 public class MainWindow extends JFrame {
     private Logger logger = Logger.getLogger(MainWindow.class.getName());
@@ -142,7 +144,7 @@ public class MainWindow extends JFrame {
         repaint();
     }
 
-    public void dataloadWhenChangePage() throws IOException, ParseException{
+    public void dataloadWhenChangePageUp() throws IOException, ParseException{
         logger.info("dataloadWhenChangePage()");
         DataFromFile curData = readDataFromFile.getNextDataFromFile();
         currentByteData = curData.getBytes();
@@ -156,8 +158,8 @@ public class MainWindow extends JFrame {
         revalidate();
         repaint();
     }
-    public void dataload3() throws IOException, ParseException{
-        logger.info("dataload2()");
+    public void dataloadWhenChangePageDown() throws IOException, ParseException{
+        logger.info("dataloadWhenChangePageDown()");
         DataFromFile curData = readDataFromFile.getPreviousDataFromFile();
         currentByteData = curData.getBytes();
         currentIntData = curData.getBytes10();
@@ -166,7 +168,6 @@ public class MainWindow extends JFrame {
             countByte--;
             address--;
         }
-     //   createDynamicTable(currentStrData, countByte, address);
         changeScaleDataTable(currentStrData,countByte,address);
         revalidate();
         repaint();

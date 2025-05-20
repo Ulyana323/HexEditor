@@ -16,8 +16,9 @@ import java.util.List;
 public class LoadDataFromFile implements ReadDataFromFile {
     private static final int PAGE_SIZE = 10 * 1024; // 10кб
     private File file;
-    private  long position = 0;
+    private long position = 0;
     private long curFileSize;
+
 
     @Override
     public DataFromFile getDataByteFromFile() throws IOException {
@@ -80,5 +81,6 @@ public class LoadDataFromFile implements ReadDataFromFile {
     public boolean isLastPage() {
         return position + PAGE_SIZE >= curFileSize;
     }
+
 
 }

@@ -42,14 +42,14 @@ public class ChangeTableScale extends AbstractAction {
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.UpPage.name())) {
             try {
-                mainWindow.dataloadWhenChangePage();
+                mainWindow.dataloadWhenChangePageUp();
             } catch (IOException | ParseException ex) {
                 throw new RuntimeException(ex);
             }
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.DownPage.name())) {
             try {
-                mainWindow.dataload3();
+                mainWindow.dataloadWhenChangePageDown();
             } catch (IOException | ParseException ex) {
                 throw new RuntimeException(ex);
             }

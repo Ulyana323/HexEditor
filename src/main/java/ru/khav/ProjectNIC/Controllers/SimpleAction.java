@@ -6,12 +6,13 @@ import ru.khav.ProjectNIC.models.MeanTableModel;
 import ru.khav.ProjectNIC.utill.ButtonNames;
 
 
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.AbstractAction;
+import javax.swing.*;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
+
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
 
 @AllArgsConstructor
 public class SimpleAction extends AbstractAction {
@@ -55,8 +56,11 @@ public class SimpleAction extends AbstractAction {
 
                 try {
                     mainWindow.dataloadInitial(mainWindow.getFileChooser().getSelectedFile().getPath());
+                    JOptionPane.showMessageDialog(mainWindow,"Файл открылся корректно",
+                            "Приветствую, все хорошо!", INFORMATION_MESSAGE);
                 } catch (Exception ex) {
-
+                    JOptionPane.showMessageDialog(mainWindow,"Ошибка открытия файла",
+                    "Ой",ERROR_MESSAGE);
                     logger.severe(ex.getMessage());
                 }
             }

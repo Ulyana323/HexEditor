@@ -5,5 +5,4 @@ public enum TypesOfMeanData {
     Byte,
     Signed,
     Unsigned
-
 }
