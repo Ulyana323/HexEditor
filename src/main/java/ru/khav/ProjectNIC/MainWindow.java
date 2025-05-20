@@ -124,8 +124,8 @@ public class MainWindow extends JFrame {
         container.setBackground(Color.black);
     }
 
-    public void dataload(String path) throws IOException, ParseException {
-        logger.info("dataload()");
+    public void dataloadInitial(String path) throws IOException, ParseException {
+        logger.info("dataloadInitial()");
         ((LoadDataFromFile) downloadDataFromFile).setFile(new File(path));
         DataFromFile curData = downloadDataFromFile.getDataByteFromFile();
         currentByteData = curData.getBytes();
@@ -142,8 +142,8 @@ public class MainWindow extends JFrame {
         repaint();
     }
 
-    public void dataload2() throws IOException, ParseException{
-        logger.info("dataload2()");
+    public void dataloadWhenChangePage() throws IOException, ParseException{
+        logger.info("dataloadWhenChangePage()");
         DataFromFile curData = downloadDataFromFile.getNextDataFromFile();
         currentByteData = curData.getBytes();
         currentIntData = curData.getBytes10();
@@ -324,7 +324,7 @@ public class MainWindow extends JFrame {
 
             northPanel.add(searchPanel, BorderLayout.WEST);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.severe(e.getMessage());
         }
         return northPanel;
     }
@@ -488,7 +488,7 @@ public class MainWindow extends JFrame {
             if (row < 0 || col < 0) return;
             int curPos = row * countByte + col;
             String hexString = (String) tableData.getModel().getValueAt(row, col);
-            if (curPos >= currentByteData.size()) {//todo проверить
+            if (curPos >= currentByteData.size()) {
                 if (downloadDataFromFile.isLastPage()) {
                     wideCurData(hexString, curPos);
                 }
@@ -499,7 +499,7 @@ public class MainWindow extends JFrame {
                 DataFromFile data = new DataFromFile(currentByteData, currentIntData);
                 downloadDataFromFile.updateDataInFile(data);
             } catch (IOException e) {
-                System.out.println(e.getMessage());
+                logger.severe(e.getMessage());
                 throw new RuntimeException(e);
             }
         });

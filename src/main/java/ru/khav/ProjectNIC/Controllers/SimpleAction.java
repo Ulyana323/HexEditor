@@ -45,7 +45,7 @@ public class SimpleAction extends AbstractAction {
                 System.out.println(mainWindow.getFileChooser().getSelectedFile().getPath());
 
                 try {
-                    mainWindow.dataload(mainWindow.getFileChooser().getSelectedFile().getPath());
+                    mainWindow.dataloadInitial(mainWindow.getFileChooser().getSelectedFile().getPath());
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                 }

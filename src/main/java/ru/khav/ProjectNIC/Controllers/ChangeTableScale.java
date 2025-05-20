@@ -42,7 +42,7 @@ public class ChangeTableScale extends AbstractAction {
         }
         if (btn.getName().equalsIgnoreCase(ButNames.UpPage.name())) {
             try {
-                mainWindow.dataload2();
+                mainWindow.dataloadWhenChangePage();
             } catch (IOException | ParseException ex) {
                 throw new RuntimeException(ex);
             }
