@@ -4,6 +4,7 @@ import lombok.Data;
 import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.utill.ReadDataFromFile;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -11,6 +12,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
 @Data
 public class LoadDataFromFile implements ReadDataFromFile {

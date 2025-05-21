@@ -11,6 +11,7 @@ public enum ButtonNames {
     UpPage,
     DownPage,
     Search,
-    DelHighlights
+    DelHighlights,
+    Info
 
 }

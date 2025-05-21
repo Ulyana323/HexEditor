@@ -32,7 +32,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.khav.ProjectNIC.MainWindow</mainClass>
+                            <mainClass>ru.khav.ProjectNIC.views.MainWindow</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -1,80 +1,39 @@
-package ru.khav.ProjectNIC;
+/*
+package ru.khav.ProjectNIC.views;
 
 import lombok.Data;
-import ru.khav.ProjectNIC.Controllers.ChangeTableScale;
-import ru.khav.ProjectNIC.Controllers.SearchSeq;
-import ru.khav.ProjectNIC.models.DataFromFile;
-import ru.khav.ProjectNIC.models.MeanTableModel;
-import ru.khav.ProjectNIC.utill.ButtonNames;
-import ru.khav.ProjectNIC.utill.ReadDataFromFile;
-import ru.khav.ProjectNIC.Controllers.SimpleAction;
-import ru.khav.ProjectNIC.Controllers.LoadDataFromFile;
-import ru.khav.ProjectNIC.views.AddressTable;
-import ru.khav.ProjectNIC.views.MeanByteTable;
-import ru.khav.ProjectNIC.views.TableData;
+import ru.khav.ProjectNIC.UI_Components.PanelFactory;
+import ru.khav.ProjectNIC.utill.DataManager;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.text.MaskFormatter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Logger;
-
-import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
 
 @Data
 public class MainWindow extends JFrame {
     private Logger logger = Logger.getLogger(MainWindow.class.getName());
-    private static int countByte = 10;
-    private static int address = 10;
-    private List<List<Integer>> highlightRanges = new ArrayList<>();
+    */
+/*    private static int countByte = 10;
+        private static int address = 10;*//*
 
-    public static int getCountBytee() {
-        return countByte;
-    }
+    //  private List<List<Integer>> highlightRanges = new ArrayList<>();
+    private final DataManager dataManager;
+    private final PanelFactory panelFactory;
 
-    public static int getAddresss() {
-        return address;
-    }
-
-    public int upCountByte() {
-        return countByte++;
-    }
-
-    public int upAddress() {
-        return address++;
-    }
-
-    public int downCountByte() {
-        return countByte--;
-    }
-
-    public int downAddress() {
-        return address--;
-    }
-
-    DefaultTableModel fileDataTableModel;
-    DefaultTableModel tableAddressModel;
-    MeanTableModel meanTableModel = new MeanTableModel();//иначе не прорисуется
+    // DefaultTableModel fileDataTableModel;
+    // DefaultTableModel tableAddressModel;
+    //MeanTableModel meanTableModel = new MeanTableModel();//иначе не прорисуется
     private JFileChooser fileChooser = null;
-    ReadDataFromFile readDataFromFile = new LoadDataFromFile();
+    //ReadDataFromFile readDataFromFile;
 
-    TableData tableData;
-    AddressTable addressTable;
-    JFormattedTextField searchSeq;
+    //  TableData tableData;
+    //AddressTable addressTable;
+    // JFormattedTextField searchSeq;
 
-    JTable meanByteTable;
-    List<Object> buffer = new ArrayList<>();
+    //  JTable meanByteTable;
+    //  List<Object> buffer = new ArrayList<>();
 
     private List<Integer> currentIntData;
     private List<Byte> currentByteData;
@@ -82,11 +41,16 @@ public class MainWindow extends JFrame {
 
     Container container = getContentPane();
     CardLayout cardLayout = new CardLayout();
-    JPanel mainPanel = new JPanel(cardLayout);
+ */
+/*   JPanel mainPanel = new JPanel(cardLayout);
     JPanel firstPanel = new JPanel(new BorderLayout());
-    JPanel secondPanel = new JPanel(new BorderLayout());
+    JPanel secondPanel = new JPanel(new BorderLayout());*//*
 
-    public MainWindow() {
+
+    public MainWindow(DataManager dataManager, PanelFactory panelFactory) {
+        this.dataManager = dataManager;
+        this.panelFactory = panelFactory;
+
         logger.info("Mainwinow()");
         setSize(4000, 2000);
         setResizable(false);
@@ -95,14 +59,13 @@ public class MainWindow extends JFrame {
         setPreferredSize(new Dimension(500, 600));
         setLocation(200, 100); // Устанавливаем позицию окна
         configContainer();
-
-        startWindow();
-
+        panelFactory.startWindow();
         pack();
         setVisible(true);
     }
 
-    public void startWindow() {
+ */
+/*   public void startWindow() {
         logger.info("startWindow");
         // Создание экземпляра JFileChooser
         fileChooser = new JFileChooser();
@@ -117,40 +80,42 @@ public class MainWindow extends JFrame {
         mainPanel.add(firstPanel, "first");
         revalidate();
         repaint();
-    }
+    }*//*
+
 
     public void configContainer() {
         logger.info("configContainer()");
         container.setLayout(new BorderLayout());
-        container.add(mainPanel, BorderLayout.CENTER);
+        container.add(panelFactory.getMainPanel(), BorderLayout.CENTER);
         container.setBackground(Color.black);
     }
 
-    public void dataloadInitial(String path) throws IOException, ParseException {
+  */
+/*  public void dataloadInitial(String path) throws IOException, ParseException {
         logger.info("dataloadInitial()");
-        ((LoadDataFromFile) readDataFromFile).setFile(new File(path));
-        DataFromFile curData = readDataFromFile.getDataByteFromFile();
-        currentByteData = curData.getBytes();
-        currentIntData = curData.getBytes10();
-        currentStrData = curData.getHexFormatOfData();
+        ((LoadDataFromFile) dataManager.getReadDataFromFile()).setFile(new File(path));
+        DataFromFile curData = dataManager.getReadDataFromFile().getDataByteFromFile();
+        dataManager.setCurrentByteData(curData.getBytes());
+        dataManager.setCurrentIntData(curData.getBytes10());
+      dataManager.setCurrentStrData(curData.getHexFormatOfData());
 
-        while (currentByteData.size() < countByte * address) {//чтоб начальное количество ячеек не превышало количество считанного
+        while (dataManager.getCurrentByteData().size() < countByte * address) {//чтоб начальное количество ячеек не превышало количество считанного
             countByte--;
             address--;
         }
-        createDynamicTable(currentStrData, countByte, address);
-        //createMenu();
+        createDynamicTable(dataManager.getCurrentStrData(), countByte, address);
+
         revalidate();
         repaint();
     }
 
-    public void dataloadWhenChangePageUp() throws IOException, ParseException{
+     public void dataloadWhenChangePageUp() throws IOException, ParseException{
         logger.info("dataloadWhenChangePage()");
-        DataFromFile curData = readDataFromFile.getNextDataFromFile();
-        currentByteData = curData.getBytes();
-        currentIntData = curData.getBytes10();
-        currentStrData = curData.getHexFormatOfData();
-        while (currentByteData.size() < countByte * address) {
+        DataFromFile curData = dataManager.getReadDataFromFile().getNextDataFromFile();
+         dataManager.setCurrentByteData(curData.getBytes());
+         dataManager.setCurrentIntData(curData.getBytes10());
+         dataManager.setCurrentStrData(curData.getHexFormatOfData());
+         while (dataManager.getCurrentByteData().size() < countByte * address) {
             countByte--;
             address--;
         }
@@ -171,33 +136,11 @@ public class MainWindow extends JFrame {
         changeScaleDataTable(currentStrData,countByte,address);
         revalidate();
         repaint();
-    }
+    }*//*
 
 
-    public void createMenu() {
-        JMenuBar jMenuBar = new JMenuBar();
-        JMenu jMenu = new JMenu("file");
-        jMenu.add(new JMenuItem("open"));
-        jMenu.add(new JMenuItem("close"));
-        JMenu jMenu1 = new JMenu("view");
-
-        jMenu1.add(new JMenuItem("theme1"));
-        jMenu1.add(new JMenuItem("theme2"));
-        JMenu jMenu2 = new JMenu("history");
-        JMenu jMenu3 = new JMenu("configure");
-
-        jMenuBar.add(jMenu);
-        jMenuBar.add(jMenu1);
-        jMenuBar.add(jMenu2);
-        jMenuBar.add(jMenu3);
-        jMenuBar.setSize(this.getWidth(), 50);
-        setJMenuBar(jMenuBar);
-        container.add(jMenuBar, BorderLayout.NORTH);
-
-
-    }
-
-    public void createDynamicTable(List<String> dataToView, int colls, int rows) throws IOException, ParseException {
+   */
+/* public void createDynamicTable(List<String> dataToView, int colls, int rows) throws IOException, ParseException {
         logger.info("createDynamicTable()");
         Vector<Vector<String>> myData = new Vector<>();
         Vector<Vector<String>> addresses = new Vector<>();
@@ -254,9 +197,10 @@ public class MainWindow extends JFrame {
 
         revalidate();
         repaint();
-    }
+    }*//*
 
-    public void changeScaleDataTable(List<String> originalData, int colls, int rows) {
+  */
+/*  public void changeScaleDataTable(List<String> originalData, int colls, int rows) {
         logger.info("changeScaleDataTable()");
         List<String> flatData = originalData;
 
@@ -298,9 +242,10 @@ public class MainWindow extends JFrame {
 
         tableData.revalidate();
         tableData.repaint();
-    }
+    }*//*
 
-    public JPanel configNorthPanel() throws ParseException {
+*/
+/*    public JPanel configNorthPanel() throws ParseException {
         JPanel northPanel = new JPanel(new BorderLayout());
         try {
             MaskFormatter m = new MaskFormatter("HH-HH-HH");
@@ -362,7 +307,6 @@ public class MainWindow extends JFrame {
         centerPanel.add(panelWithTables, BorderLayout.CENTER);
         return centerPanel;
     }
-
     public JPanel configSouthPanel() {
         logger.info("configSouthPanel()");
         JPanel tableButtonPanel = new JPanel(new GridLayout(2, 4, 5, 5));
@@ -436,9 +380,10 @@ public class MainWindow extends JFrame {
 
         return southPanel;
 
-    }
+    }*//*
 
-    public void showDecMeanConfig() {
+  */
+/*  public void showDecMeanConfig() {
         logger.info("showDecMeanConfig()");
         tableData.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -477,10 +422,10 @@ public class MainWindow extends JFrame {
             }
         });
 
-    }
+    }*//*
 
-
-    public void editDataConfig() {
+    */
+/*public void editDataConfig() {
         logger.info("editDataConfig()");
         //одиночное изменение
         tableData.getModel().addTableModelListener(l -> {
@@ -491,10 +436,10 @@ public class MainWindow extends JFrame {
             String hexString = (String) tableData.getModel().getValueAt(row, col);
             if (curPos >= currentByteData.size()) {
                 if (readDataFromFile.isLastPage()) {
-                    wideCurData(hexString, curPos);
+                    dataManager.wideCurData(hexString, curPos);
                 }
             } else {
-                updateCurData(hexString, curPos);
+                dataManager.updateCurData(hexString, curPos);
             }
             try {
                 DataFromFile data = new DataFromFile(currentByteData, currentIntData);
@@ -508,10 +453,12 @@ public class MainWindow extends JFrame {
         setupCopyActionWithoutCut();
         setupCutAction();
         setupInsertWithChangeAction();
-        setupInsertWithoutChngection();
+        setupInsertWithoutChаngeAction();
     }
+*//*
 
-    private void setupInsertWithoutChngection() {
+  */
+/*  private void  setupInsertWithoutChаngeAction() {
         KeyStroke ctrlX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
         tableData.getInputMap(JComponent.WHEN_FOCUSED).put(ctrlX, "addXFromBuff");
         tableData.getActionMap().put("addXFromBuff", new AbstractAction() {
@@ -526,7 +473,7 @@ public class MainWindow extends JFrame {
                 List<String> toInsStr = new ArrayList<>(currentStrData.subList(posFromCopy, currentStrData.size() - 1));
                 int it = 0;
                 String value;
-                wideCurDataWithoutChange(selectedCols.length);
+                dataManager.wideCurDataWithoutChange(selectedCols.length);
                 for (int col : selectedCols) {
                     if (it >= buffer.size()) break;
                     value = (String) buffer.get(it);
@@ -535,13 +482,14 @@ public class MainWindow extends JFrame {
                     it++;
                     if (curPos >= currentByteData.size()) {
                         if (readDataFromFile.isLastPage()) {
-                            wideCurData(value, curPos);
+                            dataManager.wideCurData(value, curPos);
                         }
                     } else {
-                        updateCurData(value, curPos);
+                        dataManager.updateCurData(value, curPos);
                     }
                 }
-                updateBalanceCurDataWider(toInsByte, toInsInt, toInsStr, posToInsert);
+                dataManager.updateBalanceCurDataWider(toInsByte, toInsInt, toInsStr, posToInsert,countByte,address);
+                changeScaleDataTable(currentStrData, countByte, address);
 
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
@@ -572,10 +520,10 @@ public class MainWindow extends JFrame {
                     if (curPos >= currentByteData.size()) {
                         if (!readDataFromFile.isLastPage()){
                             break;}
-                        wideCurData(value, curPos);}
+                        dataManager.wideCurData(value, curPos);}
                     else {
                         tableData.getModel().setValueAt(value, selectedRow, col);
-                        updateCurData(value, curPos);
+                        dataManager.updateCurData(value, curPos);
                     }
                 }
                 try {
@@ -608,7 +556,7 @@ public class MainWindow extends JFrame {
                     }
                     if (curPos < currentByteData.size()) {
                         tableData.getModel().setValueAt("0", selectedRow, col);
-                        updateCurData("0", curPos);
+                        dataManager.updateCurData("0", curPos);
                     }
                 }
                 try {
@@ -637,9 +585,10 @@ public class MainWindow extends JFrame {
                 }
             }
         });
-    }
+    }*//*
 
-    public void configTables() throws IOException {
+   */
+/* public void configTables() throws IOException {
         logger.info("configTables()");
         //тут данные с файла
         tableData = new TableData(fileDataTableModel);
@@ -678,9 +627,10 @@ public class MainWindow extends JFrame {
         addressTable = new AddressTable(tableAddressModel);
         //тут значения в другой интерпретации
         meanByteTable = new MeanByteTable(meanTableModel);
-    }
+    } *//*
 
-    void setupDeleteAction()
+   */
+/* void setupDeleteAction()
     {
         //удаление одиночное и блочно
         KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
@@ -694,10 +644,10 @@ public class MainWindow extends JFrame {
                     tableData.setValueAt("0", selectedRow, col);
                     int curPos = selectedRow * countByte + col;
                     if (curPos < currentStrData.size() && curPos < currentByteData.size()) {
-                        updateCurData("0", curPos);
-                    }/* else {
-                        wideCurData("0", curPos);
-                    }*/
+                        dataManager.updateCurData("0", curPos);
+                    } else {
+                        dataManager.wideCurData("0", curPos);
+                    }
                 }
                 try {
                     DataFromFile data = new DataFromFile(currentByteData, currentIntData);
@@ -708,8 +658,10 @@ public class MainWindow extends JFrame {
             }
         });
     }
+*//*
 
-    public void updateCurData(String hexString, int curPos) {
+ */
+/*   public void updateCurData(String hexString, int curPos) {
         hexString = (hexString == null) ? "0" : hexString;
         int intValue = Integer.parseInt(hexString.trim(), 16); //парсим как hex
         byte byteValue = (byte) intValue;
@@ -746,7 +698,7 @@ public class MainWindow extends JFrame {
         currentIntData.addAll(indexFrom, tm);
         currentStrData.addAll(indexFrom, t);
         changeScaleDataTable(currentStrData, countByte, address);
-    }
+    }*//*
 
     public void addHighlightRange(int sr, int sc, int er, int ec) {
         highlightRanges.add(Arrays.asList(sr, sc, er, ec));
@@ -761,10 +713,4 @@ public class MainWindow extends JFrame {
         return highlightRanges;
     }
 
-    public static void main(String[] args) {
-
-
-        SwingUtilities.invokeLater(() -> new MainWindow());
-
-    }
-}
+}*/

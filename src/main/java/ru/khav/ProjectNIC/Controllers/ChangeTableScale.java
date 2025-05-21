@@ -1,17 +1,31 @@
 package ru.khav.ProjectNIC.Controllers;
 
-import lombok.AllArgsConstructor;
-import ru.khav.ProjectNIC.MainWindow;
-import ru.khav.ProjectNIC.utill.ButtonNames;
+import ru.khav.ProjectNIC.UI_Components.PanelFactory;
+import ru.khav.ProjectNIC.UI_Components.TableFactory;
+import ru.khav.ProjectNIC.utill.*;
+import ru.khav.ProjectNIC.views.MainWindow;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.text.ParseException;
 
-@AllArgsConstructor
+
 public class ChangeTableScale extends AbstractAction {
     MainWindow mainWindow;
+    TableFactory tableFactory;
+    DataManager dataManager;
+    PanelFactory panelFactory;
+    DataLoaderToTables dataLoaderToTables;
+
+    public ChangeTableScale(MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
+        panelFactory = mainWindow.getPanelFactory();
+        dataManager = mainWindow.getDataManager();
+        tableFactory = mainWindow.getTableFactory();
+        dataLoaderToTables=mainWindow.getDataLoaderToTables();
+
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -19,37 +33,37 @@ public class ChangeTableScale extends AbstractAction {
         System.out.println("Нажатие на кнопку <" + btn.getName() + ">");
 
         if (btn.getName().equalsIgnoreCase(ButtonNames.AddRow.name())) {
-            mainWindow.getFileDataTableModel().addRow(new Object[]{mainWindow.upAddress()});
-            mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), MainWindow.getCountBytee(), MainWindow.getAddresss());
+            tableFactory.getFileDataTableModel().addRow(new Object[]{Globals.address++});
+            TableScaleService.changeScaleDataTable(dataManager.getCurrentStrData(), Globals.countByte, Globals.address,tableFactory);
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.AddColumn.name())) {
-            mainWindow.getFileDataTableModel().addColumn(mainWindow.upCountByte());
-            mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), MainWindow.getCountBytee(), MainWindow.getAddresss());
+            tableFactory.getFileDataTableModel().addColumn(Globals.countByte++);
+            TableScaleService.changeScaleDataTable(dataManager.getCurrentStrData(), Globals.countByte, Globals.address,tableFactory);
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.DelRow.name())) {
-            if (mainWindow.getFileDataTableModel().getRowCount() > 0) {
-                mainWindow.getFileDataTableModel().removeRow(MainWindow.getAddresss() - 2);
-                mainWindow.downAddress();
-                mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), MainWindow.getCountBytee(), MainWindow.getAddresss());
+            if (tableFactory.getFileDataTableModel().getRowCount() > 0) {
+                tableFactory.getFileDataTableModel().removeRow(Globals.address - 2);
+                Globals.address--;
+                TableScaleService.changeScaleDataTable(dataManager.getCurrentStrData(), Globals.countByte, Globals.address,tableFactory);
             }
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.DelColumn.name())) {
-            if (mainWindow.getFileDataTableModel().getColumnCount() > 1) {
-                mainWindow.getFileDataTableModel().setColumnCount(MainWindow.getCountBytee() - 1);
-                mainWindow.downCountByte();
-                mainWindow.changeScaleDataTable(mainWindow.getCurrentStrData(), MainWindow.getCountBytee(), MainWindow.getAddresss());
+            if (tableFactory.getFileDataTableModel().getColumnCount() > 1) {
+                tableFactory.getFileDataTableModel().setColumnCount(Globals.countByte - 1);
+                Globals.countByte--;
+                TableScaleService.changeScaleDataTable(dataManager.getCurrentStrData(), Globals.countByte, Globals.address,tableFactory);
             }
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.UpPage.name())) {
             try {
-                mainWindow.dataloadWhenChangePageUp();
+                dataLoaderToTables.dataloadWhenChangePageUp(mainWindow);
             } catch (IOException | ParseException ex) {
                 throw new RuntimeException(ex);
             }
         }
         if (btn.getName().equalsIgnoreCase(ButtonNames.DownPage.name())) {
             try {
-                mainWindow.dataloadWhenChangePageDown();
+                dataLoaderToTables.dataloadWhenChangePageDown(mainWindow);
             } catch (IOException | ParseException ex) {
                 throw new RuntimeException(ex);
             }
