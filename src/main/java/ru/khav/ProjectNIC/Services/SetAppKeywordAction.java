@@ -53,7 +53,7 @@ public class SetAppKeywordAction {
         });
     }
 
-    public static void setupInsertWithoutChаngeAction(DataFromFileTable dataFromFileTable, DataManager dataManager,
+    public static void setupInsertWithoutChangeAction(DataFromFileTable dataFromFileTable, DataManager dataManager,
                                                       int countByte, int address, TableFactory tableFactory) {
         List<Byte> currentByteData = dataManager.getCurrentByteData();
         List<String> currentStrData = dataManager.getCurrentStrData();
@@ -65,7 +65,6 @@ public class SetAppKeywordAction {
         dataFromFileTable.getActionMap().put("addXFromBuff", new AbstractAction() {
             @Override//вставка блока элементов с помощью ctrlX
             public void actionPerformed(ActionEvent e) {
-                TableFactory tablefactory = tableFactory;
                 int selectedRow = dataFromFileTable.getSelectedRow();
                 int[] selectedCols = dataFromFileTable.getSelectedColumns();
                 int posFromCopy = selectedRow * countByte + selectedCols[0];

@@ -32,11 +32,24 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.khav.ProjectNIC.views.MainWindow</mainClass>
+                            <mainClass>ru.khav.ProjectNIC.HexEditorApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+                <execution>
+                    <id>attach-javadocs</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
         </plugins>
     </build>
 </project>

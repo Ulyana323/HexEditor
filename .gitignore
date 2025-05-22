@@ -3,7 +3,9 @@
 
 # Log file
 *.log
-
+*.html
+*.css
+*.js
 # BlueJ files
 *.ctxt
 *.txt

@@ -15,6 +15,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+COPY ./src/main/java /app/src
+
 COPY target/HexEditorGUI-1.0-SNAPSHOT.jar app.jar
 
+RUN mkdir -p /app/docs
+# генерация javadoc
+RUN javadoc -d /app/docs -sourcepath /app/src -subpackages ru.khav.ProjectNIC
+
+VOLUME ["/app/docs"]
 ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["echo", "javadoc сгенерирован в /app/docs"]

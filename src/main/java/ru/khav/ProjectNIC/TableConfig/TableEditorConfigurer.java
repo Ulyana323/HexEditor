@@ -98,7 +98,7 @@ public class TableEditorConfigurer {
                 countByte, panelFactory.getSecondPanel());
         SetAppKeywordAction.setupInsertWithChangeAction(dataFromFileTable, dataManager,
                 countByte);
-        SetAppKeywordAction.setupInsertWithoutChаngeAction(dataFromFileTable, dataManager,
+        SetAppKeywordAction.setupInsertWithoutChangeAction(dataFromFileTable, dataManager,
                 countByte, address, tableFactory);
     }
 }
