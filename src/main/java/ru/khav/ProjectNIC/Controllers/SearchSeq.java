@@ -6,7 +6,7 @@ import ru.khav.ProjectNIC.utill.DataLoaderToTables;
 import ru.khav.ProjectNIC.utill.DataManager;
 import ru.khav.ProjectNIC.utill.Globals;
 import ru.khav.ProjectNIC.views.MainWindow;
-import ru.khav.ProjectNIC.utill.ButtonNames;
+import ru.khav.ProjectNIC.Enums.ButtonNames;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

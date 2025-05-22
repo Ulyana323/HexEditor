@@ -1,4 +1,4 @@
-package ru.khav.ProjectNIC.utill;
+package ru.khav.ProjectNIC.Enums;
 
 public enum ButtonNames {
     AddColumn,

@@ -2,10 +2,10 @@ package ru.khav.ProjectNIC.utill;
 
 import lombok.Data;
 import ru.khav.ProjectNIC.Controllers.LoadDataFromFile;
+import ru.khav.ProjectNIC.Interfaces.ReadDataFromFile;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 @Data
 public class DataManager {

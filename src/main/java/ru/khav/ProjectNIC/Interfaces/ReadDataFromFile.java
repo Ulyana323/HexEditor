@@ -1,4 +1,4 @@
-package ru.khav.ProjectNIC.utill;
+package ru.khav.ProjectNIC.Interfaces;
 
 import ru.khav.ProjectNIC.models.DataFromFile;
 

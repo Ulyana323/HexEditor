@@ -1,6 +1,6 @@
 package ru.khav.ProjectNIC.models;
 
-import ru.khav.ProjectNIC.utill.TypesOfMeanData;
+import ru.khav.ProjectNIC.Enums.TypesOfMeanData;
 
 import javax.swing.table.AbstractTableModel;
 

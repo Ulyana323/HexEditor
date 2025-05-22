@@ -1,8 +1,8 @@
 package ru.khav.ProjectNIC.utill;
 
+import ru.khav.ProjectNIC.Interfaces.ReadDataFromFile;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
 import ru.khav.ProjectNIC.models.DataFromFile;
-import ru.khav.ProjectNIC.views.MainWindow;
 import ru.khav.ProjectNIC.views.TableData;
 
 import javax.swing.*;

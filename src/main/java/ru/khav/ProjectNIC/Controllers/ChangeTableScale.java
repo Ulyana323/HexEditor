@@ -1,5 +1,6 @@
 package ru.khav.ProjectNIC.Controllers;
 
+import ru.khav.ProjectNIC.Enums.ButtonNames;
 import ru.khav.ProjectNIC.UI_Components.PanelFactory;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
 import ru.khav.ProjectNIC.utill.*;
