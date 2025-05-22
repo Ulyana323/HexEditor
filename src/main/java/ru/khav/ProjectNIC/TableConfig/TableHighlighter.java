@@ -1,4 +1,4 @@
-package ru.khav.ProjectNIC.Table;
+package ru.khav.ProjectNIC.TableConfig;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

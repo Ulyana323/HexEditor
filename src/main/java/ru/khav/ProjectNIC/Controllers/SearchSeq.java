@@ -2,8 +2,7 @@ package ru.khav.ProjectNIC.Controllers;
 
 import ru.khav.ProjectNIC.UI_Components.PanelFactory;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
-import ru.khav.ProjectNIC.utill.DataLoaderToTables;
-import ru.khav.ProjectNIC.utill.DataManager;
+import ru.khav.ProjectNIC.models.DataManager;
 import ru.khav.ProjectNIC.utill.Globals;
 import ru.khav.ProjectNIC.views.MainWindow;
 import ru.khav.ProjectNIC.Enums.ButtonNames;
@@ -25,16 +24,14 @@ public class SearchSeq extends AbstractAction {
     TableFactory tableFactory;
     DataManager dataManager;
     PanelFactory panelFactory;
-    DataLoaderToTables dataLoaderToTables;
+
 
 
     public SearchSeq(MainWindow mainWindow) {
-        this.mainWindow = mainWindow;
         this.mainWindow=mainWindow;
         panelFactory=mainWindow.getPanelFactory();
         dataManager=mainWindow.getDataManager();
         tableFactory=mainWindow.getTableFactory();
-        dataLoaderToTables=mainWindow.getDataLoaderToTables();
 
     }
 
@@ -45,7 +42,7 @@ public class SearchSeq extends AbstractAction {
 
         if (btn.getName().equalsIgnoreCase(ButtonNames.Search.name())) {
             List<String> data = dataManager.getCurrentStrData();
-            String seq = panelFactory.getSearchSeq().getText();
+            String seq = panelFactory.getNorthPanelBuilder().getSearchSeq().getText();
             int cols = Globals.countByte;
 
             String[] pattern = seq.split("-");
@@ -87,7 +84,7 @@ public class SearchSeq extends AbstractAction {
                                 for (List<Integer> r : part) {
                                     tableFactory.addHighlightRange(r.get(0), r.get(1), r.get(2), r.get(3));
                                 }
-                                tableFactory.getTableData().repaint();
+                                tableFactory.getDataFromFileTable().repaint();
                             });
                             allResults.addAll(part);
                         }

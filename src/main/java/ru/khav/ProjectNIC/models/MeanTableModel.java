@@ -6,7 +6,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class MeanTableModel extends AbstractTableModel {
 
-    final Object[][]  meanings = new Object[8][4];
+    final Object[][] meanings = new Object[8][4];
 
     public void clear() {
         for (int i = 0; i < meanings.length; i++) {
@@ -16,6 +16,7 @@ public class MeanTableModel extends AbstractTableModel {
         }
         fireTableDataChanged();
     }
+
     @Override
     public String getColumnName(int column) {
         switch (column) {

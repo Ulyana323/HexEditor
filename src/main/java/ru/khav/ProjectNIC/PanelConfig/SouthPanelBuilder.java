@@ -1,4 +1,4 @@
-package ru.khav.ProjectNIC.Panel;
+package ru.khav.ProjectNIC.PanelConfig;
 
 import ru.khav.ProjectNIC.Controllers.ChangeTableScale;
 import ru.khav.ProjectNIC.Controllers.SimpleAction;
@@ -9,8 +9,10 @@ import ru.khav.ProjectNIC.views.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Logger;
 
 public class SouthPanelBuilder implements PanelBuilder {
+    Logger logger = Logger.getLogger(SouthPanelBuilder.class.getName());
     private final TableFactory tableFactory;
 
     public SouthPanelBuilder(TableFactory tableFactory) {
@@ -19,7 +21,7 @@ public class SouthPanelBuilder implements PanelBuilder {
 
     @Override
     public JPanel build(MainWindow mainWindow) {
-        //logger.info("configSouthPanel() :PanelFactory");
+        logger.info("configSouthPanel() :SouthPanelBuilder");
         JPanel tableButtonPanel = new JPanel(new GridLayout(2, 4, 5, 5));
 
         JButton addRowButton = new JButton("add row");

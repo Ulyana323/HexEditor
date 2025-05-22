@@ -2,6 +2,7 @@ package ru.khav.ProjectNIC.Interfaces;
 
 import ru.khav.ProjectNIC.models.DataFromFile;
 
+import java.io.File;
 import java.io.IOException;
 
 public interface ReadDataFromFile {
@@ -10,6 +11,8 @@ public interface ReadDataFromFile {
     void updateDataInFile(DataFromFile data) throws IOException;
 
     boolean isLastPage();
+
+    void setFile(File file);
 
     DataFromFile getNextDataFromFile() throws IOException;
 

@@ -1,8 +1,8 @@
 package ru.khav.ProjectNIC.Controllers;
 
 import lombok.Data;
-import ru.khav.ProjectNIC.models.DataFromFile;
 import ru.khav.ProjectNIC.Interfaces.ReadDataFromFile;
+import ru.khav.ProjectNIC.models.DataFromFile;
 
 import java.io.File;
 import java.io.IOException;

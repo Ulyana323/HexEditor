@@ -1,4 +1,4 @@
-package ru.khav.ProjectNIC.Panel;
+package ru.khav.ProjectNIC.PanelConfig;
 
 import ru.khav.ProjectNIC.Interfaces.PanelBuilder;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
@@ -6,9 +6,11 @@ import ru.khav.ProjectNIC.views.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Logger;
 
 public class CenterPanelBuilder implements PanelBuilder {
     private final TableFactory tableFactory;
+    Logger logger = Logger.getLogger(CenterPanelBuilder.class.getName());
 
     public CenterPanelBuilder(TableFactory tableFactory) {
         this.tableFactory = tableFactory;
@@ -16,12 +18,12 @@ public class CenterPanelBuilder implements PanelBuilder {
 
     @Override
     public JPanel build(MainWindow mainWindow) {
-        //logger.info("configCenterPanel(): PanelFactory");
-        for (int i = 0; i < tableFactory.getTableData().getColumnCount(); i++) {
-            tableFactory.getTableData().getColumnModel().getColumn(i).setPreferredWidth(80);
+        logger.info("configCenterPanel(): CenterPanelBuilder");
+        for (int i = 0; i < tableFactory.getDataFromFileTable().getColumnCount(); i++) {
+            tableFactory.getDataFromFileTable().getColumnModel().getColumn(i).setPreferredWidth(80);
         }
         // Прокручиваемая панель с таблицей
-        JScrollPane scrollPane = new JScrollPane(tableFactory.getTableData(),
+        JScrollPane scrollPane = new JScrollPane(tableFactory.getDataFromFileTable(),
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         JScrollPane scrollPane1 = new JScrollPane(tableFactory.getAddressTable(),

@@ -1,5 +1,6 @@
-package ru.khav.ProjectNIC.Panel;
+package ru.khav.ProjectNIC.PanelConfig;
 
+import lombok.Data;
 import ru.khav.ProjectNIC.Controllers.SearchSeq;
 import ru.khav.ProjectNIC.Enums.ButtonNames;
 import ru.khav.ProjectNIC.Interfaces.PanelBuilder;
@@ -8,12 +9,16 @@ import ru.khav.ProjectNIC.views.MainWindow;
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import java.awt.*;
+import java.util.logging.Logger;
 
+@Data
 public class NorthPanelBuilder implements PanelBuilder {
+    Logger logger = Logger.getLogger(NorthPanelBuilder.class.getName());
     JFormattedTextField searchSeq;
+
     @Override
     public JPanel build(MainWindow mainWindow) {
-      //  logger.info("configNorthPanel(): PanelFactory");
+        logger.info("configNorthPanel(): NorthPanelBuilder");
         JPanel northPanel = new JPanel(new BorderLayout());
         try {
             MaskFormatter m = new MaskFormatter("HH-HH-HH");
@@ -26,7 +31,7 @@ public class NorthPanelBuilder implements PanelBuilder {
             toSearch.setName(ButtonNames.Search.name());
             toSearch.addActionListener(new SearchSeq(mainWindow));
 
-            JButton info = new JButton("I");
+            JButton info = new JButton("Info");
             info.setName(ButtonNames.Info.name());
             info.addActionListener(new SearchSeq(mainWindow));
 
@@ -43,7 +48,7 @@ public class NorthPanelBuilder implements PanelBuilder {
 
             northPanel.add(searchPanel, BorderLayout.WEST);
         } catch (Exception e) {
-           // logger.severe(e.getMessage());
+            logger.severe(e.getMessage());
         }
         return northPanel;
     }

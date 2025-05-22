@@ -1,5 +1,6 @@
 package ru.khav.ProjectNIC.models;
 
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.IOException;
@@ -10,18 +11,17 @@ import java.util.List;
 @NoArgsConstructor
 public class DataFromFile {
 
+    private List<Byte> bytes = new LinkedList<>();
+    private List<Integer> bytes10 = new LinkedList<>();
+
     public DataFromFile(List<Byte> bytes, List<Integer> bytes10) {
         this.bytes = bytes;
         this.bytes10 = bytes10;
     }
 
-    private List<Byte> bytes = new LinkedList<>();
-
     public List<Integer> getBytes10() {
         return bytes10;
     }
-
-    private List<Integer> bytes10 = new LinkedList<>();
 
     public List<Byte> getBytes() {
         return bytes;

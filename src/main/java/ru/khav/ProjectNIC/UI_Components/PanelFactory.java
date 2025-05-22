@@ -4,9 +4,9 @@ package ru.khav.ProjectNIC.UI_Components;
 import lombok.Data;
 import ru.khav.ProjectNIC.Controllers.SimpleAction;
 import ru.khav.ProjectNIC.Enums.ButtonNames;
-import ru.khav.ProjectNIC.Panel.CenterPanelBuilder;
-import ru.khav.ProjectNIC.Panel.NorthPanelBuilder;
-import ru.khav.ProjectNIC.Panel.SouthPanelBuilder;
+import ru.khav.ProjectNIC.PanelConfig.CenterPanelBuilder;
+import ru.khav.ProjectNIC.PanelConfig.NorthPanelBuilder;
+import ru.khav.ProjectNIC.PanelConfig.SouthPanelBuilder;
 import ru.khav.ProjectNIC.views.MainWindow;
 
 
@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 @Data
 public class PanelFactory  {
     Logger logger= Logger.getLogger(PanelFactory.class.getName());
+
     CardLayout cardLayout = new CardLayout();
     JPanel mainPanel = new JPanel(cardLayout);
     JPanel firstPanel = new JPanel(new BorderLayout());

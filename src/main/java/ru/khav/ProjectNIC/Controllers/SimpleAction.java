@@ -1,17 +1,17 @@
 package ru.khav.ProjectNIC.Controllers;
 
 import lombok.AllArgsConstructor;
+import ru.khav.ProjectNIC.Enums.ButtonNames;
+import ru.khav.ProjectNIC.Services.DataLoaderService;
 import ru.khav.ProjectNIC.UI_Components.PanelFactory;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
-import ru.khav.ProjectNIC.utill.DataLoaderToTables;
-import ru.khav.ProjectNIC.utill.DataManager;
-import ru.khav.ProjectNIC.views.MainWindow;
+import ru.khav.ProjectNIC.models.DataManager;
 import ru.khav.ProjectNIC.models.MeanTableModel;
-import ru.khav.ProjectNIC.Enums.ButtonNames;
-
+import ru.khav.ProjectNIC.views.MainWindow;
 
 import javax.swing.*;
-import java.awt.CardLayout;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 
@@ -25,32 +25,29 @@ public class SimpleAction extends AbstractAction {
     TableFactory tableFactory;
     DataManager dataManager;
     PanelFactory panelFactory;
-    DataLoaderToTables dataLoaderToTables;
-
-    public SimpleAction(MainWindow mainWindow)
-    {
-        this.mainWindow=mainWindow;
-        panelFactory=mainWindow.getPanelFactory();
-        dataManager=mainWindow.getDataManager();
-        tableFactory=mainWindow.getTableFactory();
-        dataLoaderToTables=mainWindow.getDataLoaderToTables();
-    }
-
     private Logger logger = Logger.getLogger(SimpleAction.class.getName());
+
+    public SimpleAction(MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
+        panelFactory = mainWindow.getPanelFactory();
+        dataManager = mainWindow.getDataManager();
+        tableFactory = mainWindow.getTableFactory();
+
+    }
 
     public void actionPerformed(ActionEvent e) {
 
 
         JButton btn = (JButton) e.getSource();
-       logger.info("Ты нажал <" + btn.getName() + ">");
+        logger.info("Ты нажал <" + btn.getName() + ">");
         if (btn.getName().equalsIgnoreCase(ButtonNames.Exit.name())) {
             CardLayout cl = (CardLayout) (mainWindow.getPanelFactory().getMainPanel().getLayout());
             cl.show(mainWindow.getPanelFactory().getMainPanel(), "first");
             dataManager.getCurrentByteData().clear();
             dataManager.getCurrentIntData().clear();
             dataManager.getCurrentStrData().clear();
-            tableFactory.getFileDataTableModel().setRowCount(0);
-            tableFactory.getFileDataTableModel().setColumnCount(0);
+            ((DefaultTableModel) tableFactory.getDataFromFileTable().getModel()).setRowCount(0);
+            ((DefaultTableModel) tableFactory.getDataFromFileTable().getModel()).setColumnCount(0);
             MeanTableModel m = (MeanTableModel) tableFactory.getMeanByteTable().getModel();
             m.clear();
             panelFactory.getSecondPanel().removeAll();
@@ -68,15 +65,15 @@ public class SimpleAction extends AbstractAction {
             int result = panelFactory.getFileChooser().showOpenDialog(mainWindow);
             // Если директория выбрана, покажем ее в сообщении
             if (result == JFileChooser.APPROVE_OPTION) {
-                logger.info("Opened: " +panelFactory.getFileChooser().getSelectedFile().getPath());
+                logger.info("Opened: " + panelFactory.getFileChooser().getSelectedFile().getPath());
 
                 try {
-                    dataLoaderToTables.dataloadInitial(panelFactory.getFileChooser().getSelectedFile().getPath(),mainWindow);
-                    JOptionPane.showMessageDialog(mainWindow,"Файл открылся корректно",
+                    DataLoaderService.dataloadInitial(panelFactory.getFileChooser().getSelectedFile().getPath(), mainWindow, dataManager, tableFactory, panelFactory);
+                    JOptionPane.showMessageDialog(mainWindow, "Файл открылся корректно",
                             "Приветствую, все хорошо!", INFORMATION_MESSAGE);
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(mainWindow,"Ошибка открытия файла",
-                    "Ой",ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(mainWindow, "Ошибка открытия файла",
+                            "Ой", ERROR_MESSAGE);
                     logger.severe(ex.getMessage());
                 }
             }

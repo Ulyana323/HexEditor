@@ -4,9 +4,9 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
 
-public class TableData extends JTable {
+public class DataFromFileTable extends JTable {
 
-    public TableData(TableModel tableModel) {
+    public DataFromFileTable(TableModel tableModel) {
         super(tableModel);
         getTableHeader().setResizingAllowed(false);
         getTableHeader().setReorderingAllowed(false);

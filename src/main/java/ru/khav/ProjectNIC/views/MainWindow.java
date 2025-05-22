@@ -3,8 +3,7 @@ package ru.khav.ProjectNIC.views;
 import lombok.Data;
 import ru.khav.ProjectNIC.UI_Components.PanelFactory;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
-import ru.khav.ProjectNIC.utill.DataLoaderToTables;
-import ru.khav.ProjectNIC.utill.DataManager;
+import ru.khav.ProjectNIC.models.DataManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,16 +14,15 @@ public class MainWindow extends JFrame {
     private final DataManager dataManager;
     private final PanelFactory panelFactory;
     private final TableFactory tableFactory;
-    private final DataLoaderToTables dataLoaderToTables;
+
     Container container = getContentPane();
     CardLayout cardLayout = new CardLayout();
     private Logger logger = Logger.getLogger(MainWindow.class.getName());
 
-    public MainWindow(DataManager dataManager, PanelFactory panelFactory, TableFactory tableFactory, DataLoaderToTables dataLoaderToTables) {
+    public MainWindow(DataManager dataManager, PanelFactory panelFactory, TableFactory tableFactory) {
         this.dataManager = dataManager;
         this.panelFactory = panelFactory;
         this.tableFactory = tableFactory;
-        this.dataLoaderToTables = dataLoaderToTables;
         logger.info("Mainwinow()");
         setSize(4000, 2000);
         setResizable(false);

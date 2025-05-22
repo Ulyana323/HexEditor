@@ -1,26 +1,30 @@
-package ru.khav.ProjectNIC.Table;
+package ru.khav.ProjectNIC.TableConfig;
 
+import ru.khav.ProjectNIC.Services.DataEditorService;
 import ru.khav.ProjectNIC.UI_Components.PanelFactory;
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
 import ru.khav.ProjectNIC.models.DataFromFile;
-import ru.khav.ProjectNIC.utill.DataManager;
-import ru.khav.ProjectNIC.utill.SetAppKeywordAction;
-import ru.khav.ProjectNIC.views.TableData;
+import ru.khav.ProjectNIC.models.DataManager;
+import ru.khav.ProjectNIC.Services.SetAppKeywordAction;
+import ru.khav.ProjectNIC.views.DataFromFileTable;
 
 import javax.swing.*;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import static ru.khav.ProjectNIC.utill.Globals.address;
 import static ru.khav.ProjectNIC.utill.Globals.countByte;
 
 public class TableEditorConfigurer {
-    public void EditDataInMeanTable(TableData tableData, DataManager dataManager, JTable meanByteTable) {
-      //  logger.info("showDecMeanConfig() :TableFactory");
-        tableData.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+    private Logger logger = Logger.getLogger(TableEditorConfigurer.class.getName());
+
+    public void EditDataInMeanTable(DataFromFileTable dataFromFileTable, DataManager dataManager, JTable meanByteTable) {
+        logger.info("EditDataInMeanTable() :TableEditorConfigurer");
+        dataFromFileTable.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                int selectedRow = tableData.getSelectedRow();
-                int[] selectedColumns = tableData.getSelectedColumns();
+                int selectedRow = dataFromFileTable.getSelectedRow();
+                int[] selectedColumns = dataFromFileTable.getSelectedColumns();
 
                 int meanA = 3;
                 int mean = 2;
@@ -31,7 +35,7 @@ public class TableEditorConfigurer {
 
                 for (int col : selectedColumns) {
                     int curPos = selectedRow * countByte + col;
-                    if (tableData.isCellSelected(selectedRow, col) && curPos < dataManager.getCurrentByteData().size()) {
+                    if (dataFromFileTable.isCellSelected(selectedRow, col) && curPos < dataManager.getCurrentByteData().size()) {
                         String value = dataManager.getCurrentStrData().get(curPos);
                         byte byteValue = dataManager.getCurrentByteData().get(curPos);
                         int unsignValue = dataManager.getCurrentIntData().get(curPos);
@@ -55,41 +59,46 @@ public class TableEditorConfigurer {
         });
 
     }
-    public void editDataInMainTableConfig(TableData tableData,
-                                          DataManager dataManager,
-                                          PanelFactory panelFactory,
-                                          TableFactory tableFactory) {
-        //logger.info("editDataConfig() :TableFactory");
+
+    public void editDataInMainTable(DataFromFileTable dataFromFileTable,
+                                    DataManager dataManager,
+                                    PanelFactory panelFactory,
+                                    TableFactory tableFactory) {
+        logger.info("editDataInMainTable() :TableEditorConfigurer");
         //одиночное изменение
-        tableData.getModel().addTableModelListener(l -> {
+        dataFromFileTable.getModel().addTableModelListener(l -> {
             int row = l.getFirstRow();
             int col = l.getColumn();
             if (row < 0 || col < 0) return;
             int curPos = row * countByte + col;
-            String hexString = (String) tableData.getModel().getValueAt(row, col);
+            String hexString = (String) dataFromFileTable.getModel().getValueAt(row, col);
             if (curPos >= dataManager.getCurrentByteData().size()) {
                 if (dataManager.getReadDataFromFile().isLastPage()) {
-                    dataManager.wideCurData(hexString, curPos);
+                    DataEditorService.wideCurData(hexString, curPos, dataManager.getCurrentByteData()
+                            , dataManager.getCurrentIntData(),
+                            dataManager.getCurrentStrData());
                 }
             } else {
-                dataManager.updateCurData(hexString, curPos);
+                DataEditorService.updateCurData(hexString, curPos, dataManager.getCurrentByteData()
+                        , dataManager.getCurrentIntData(),
+                        dataManager.getCurrentStrData());
             }
             try {
                 DataFromFile data = new DataFromFile(dataManager.getCurrentByteData(),
                         dataManager.getCurrentIntData());
                 dataManager.getReadDataFromFile().updateDataInFile(data);
             } catch (IOException e) {
-                //logger.severe(e.getMessage());
+                logger.severe(e.getMessage());
                 throw new RuntimeException(e);
             }
         });
-        SetAppKeywordAction.setupDeleteAction(tableData, dataManager, countByte);
-        SetAppKeywordAction.setupCopyActionWithoutCut(tableData);
-        SetAppKeywordAction.setupCutAction(tableData, dataManager,
+        SetAppKeywordAction.setupDeleteAction(dataFromFileTable, dataManager, countByte);
+        SetAppKeywordAction.setupCopyActionWithoutCut(dataFromFileTable);
+        SetAppKeywordAction.setupCutAction(dataFromFileTable, dataManager,
                 countByte, panelFactory.getSecondPanel());
-        SetAppKeywordAction.setupInsertWithChangeAction(tableData, dataManager,
+        SetAppKeywordAction.setupInsertWithChangeAction(dataFromFileTable, dataManager,
                 countByte);
-        SetAppKeywordAction.setupInsertWithoutChаngeAction(tableData, dataManager,
-                countByte, address, tableFactory);//todo tablefactory?
+        SetAppKeywordAction.setupInsertWithoutChаngeAction(dataFromFileTable, dataManager,
+                countByte, address, tableFactory);
     }
 }

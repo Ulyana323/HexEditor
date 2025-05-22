@@ -1,8 +1,8 @@
-package ru.khav.ProjectNIC.utill;
+package ru.khav.ProjectNIC.Services;
 
 import ru.khav.ProjectNIC.UI_Components.TableFactory;
-import ru.khav.ProjectNIC.views.MainWindow;
 
+import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -11,8 +11,8 @@ public class TableScaleService {
     private static Logger logger = Logger.getLogger(TableScaleService.class.getName());
 
     public static void changeScaleDataTable(List<String> originalData, int colls, int rows,
-                                     TableFactory tableFactory) {
-       logger.info("changeScaleDataTable(): TableScaleService");
+                                            TableFactory tableFactory) {
+        logger.info("changeScaleDataTable(): TableScaleService");
         List<String> flatData = originalData;
 
         //подгонка размера под новые colls * rows
@@ -48,10 +48,10 @@ public class TableScaleService {
             columnNames.add(String.valueOf(i));
         }
 
-        tableFactory.getFileDataTableModel().setDataVector(myData, columnNames);
-        tableFactory.getTableAddressModel().setDataVector(addresses, columnAddrNames);
+        ((DefaultTableModel) tableFactory.getDataFromFileTable().getModel()).setDataVector(myData, columnNames);
+        ((DefaultTableModel) tableFactory.getAddressTable().getModel()).setDataVector(addresses, columnAddrNames);
 
-        tableFactory.getTableData().revalidate();
-        tableFactory.getTableData().repaint();
+        tableFactory.getDataFromFileTable().revalidate();
+        tableFactory.getDataFromFileTable().repaint();
     }
 }
